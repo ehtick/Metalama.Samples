@@ -29,7 +29,7 @@ internal class ImmutableCollectionPropertyMapping : PropertyMapping
 
         this._collectionBuilderField = builderType
             .IntroduceField(NameHelper.ToFieldName(this.SourceProperty.Name + "Builder"),
-                this._collectionBuilderType.ToNullableType(),
+                this._collectionBuilderType.ToNullable(),
                 buildField: f => f.Accessibility = Accessibility.Private)
             .Declaration;
 

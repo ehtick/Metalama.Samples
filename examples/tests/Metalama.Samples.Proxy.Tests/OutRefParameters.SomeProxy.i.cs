@@ -1,3 +1,4 @@
+using System.Reflection;
 using Metalama.Samples.Proxy.Tests.OutRefParameters;
 namespace Metalama.Samples.Proxy.Tests
 {
@@ -5,6 +6,13 @@ namespace Metalama.Samples.Proxy.Tests
   {
     private ISomeInterface _intercepted;
     private IInterceptor _interceptor;
+    private static InterceptionMetadata _metadata1;
+    private static InterceptionMetadata _metadata2;
+    static SomeProxy()
+    {
+      _metadata1 = new InterceptionMetadata(typeof(ISomeInterface).GetMethod("VoidMethod", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(int).MakeByRefType(), typeof(string).MakeByRefType(), typeof(DateTime).MakeByRefType(), typeof(TimeSpan).MakeByRefType() }, null), false);
+      _metadata2 = new InterceptionMetadata(typeof(ISomeInterface).GetMethod("NonVoidMethod", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(int).MakeByRefType(), typeof(string).MakeByRefType(), typeof(DateTime).MakeByRefType(), typeof(TimeSpan).MakeByRefType() }, null), false);
+    }
     public SomeProxy(IInterceptor interceptor, ISomeInterface intercepted)
     {
       _interceptor = interceptor;
@@ -15,7 +23,7 @@ namespace Metalama.Samples.Proxy.Tests
       var args = (default(int), b, dt, ts);
       try
       {
-        return _interceptor.Invoke(ref args, Invoke);
+        return _interceptor.Invoke(ref args, _metadata2, Invoke);
       }
       finally
       {
@@ -32,13 +40,14 @@ namespace Metalama.Samples.Proxy.Tests
       var args = (default(int), b, dt, ts);
       try
       {
-        _interceptor.Invoke(ref args, Invoke);
+        _interceptor.Invoke(ref args, _metadata1, Invoke);
       }
       finally
       {
         a = args.Item1;
         b = args.Item2;
       }
+      return;
       ValueTuple Invoke(ref (int, string, DateTime, TimeSpan) receivedArgs)
       {
         _intercepted.VoidMethod(out receivedArgs.Item1, ref receivedArgs.Item2, receivedArgs.Item3, receivedArgs.Item4);

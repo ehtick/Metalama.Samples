@@ -92,8 +92,6 @@ internal static class TupleHelper
 
         IType CreateTupleTypeRecursive(int firstParameterIndex)
         {
-            Debugger.Break();
-
             var lastDirectParameterIndex =
                 Math.Min(method.Parameters.Count, firstParameterIndex + 7);
 

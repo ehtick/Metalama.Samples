@@ -3,8 +3,6 @@ using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using Metalama.Framework.Diagnostics;
 
-#pragma warning disable IDE0031, IDE1005
-
 [Inheritable]
 public class TrackChangesAttribute : TypeAspect
 {

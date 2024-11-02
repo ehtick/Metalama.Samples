@@ -11,7 +11,7 @@ public class NoNullStringAttribute : OverrideFieldOrPropertyAspect
         {
             if (meta.Target.FieldOrProperty.Value == null)
             {
-                if (meta.Target.FieldOrProperty.Type.Is(SpecialType.String))
+                if (meta.Target.FieldOrProperty.Type.Equals(SpecialType.String))
                 {
                     meta.Target.FieldOrProperty.Value = string.Empty;
                 }

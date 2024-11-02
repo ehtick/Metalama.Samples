@@ -4,8 +4,6 @@ using Metalama.Framework.Code;
 using Metalama.Framework.Code.SyntaxBuilders;
 using Microsoft.Extensions.Logging;
 
-#pragma warning disable CS8618
-
 public class LogAttribute : OverrideMethodAspect
 {
     [IntroduceDependency] private readonly ILogger _logger;
@@ -33,7 +31,7 @@ public class LogAttribute : OverrideMethodAspect
                 // Display the success message. The message is different when the method is void.
                 var successMessage = BuildInterpolatedString(true);
 
-                if (meta.Target.Method.ReturnType.Is(typeof(void)))
+                if (meta.Target.Method.ReturnType.Equals(SpecialType.Void))
                 {
                     // When the method is void, display a constant text.
                     successMessage.AddText(" succeeded.");

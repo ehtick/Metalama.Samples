@@ -68,7 +68,7 @@ public static class CachingOptionsExtensions
         }
 
         // Check ICacheKey.
-        if (expression.Type.Is(typeof(ICacheKey)) ||
+        if (expression.Type.IsConvertibleTo(typeof(ICacheKey)) ||
             (expression.Type is INamedType { BelongsToCurrentProject: true } namedType &&
              namedType.Enhancements().HasAspect<GenerateCacheKeyAspect>()))
         {
@@ -118,7 +118,7 @@ public static class CachingOptionsExtensions
                 }
             }
         }
-        else if (expression.Type.Is(typeof(ICacheKey)) ||
+        else if (expression.Type.IsConvertibleTo(typeof(ICacheKey)) ||
                  (expression.Type is INamedType namedType &&
                   namedType.Enhancements().HasAspect<GenerateCacheKeyAspect>()))
         {

@@ -5,21 +5,18 @@
         <RepoKind>GitHub</RepoKind>
     </PropertyGroup>
 
-    <Import Sdk="PostSharp.Engineering.Sdk" Project="BuildOptions.props"/>
-
-    <PropertyGroup>
-        <NoWarn>LAMA0048;CA1050;LAMA0066</NoWarn>
-        <LangVersion>12</LangVersion>
-    </PropertyGroup>
-
     <Import Project="eng\Versions.props"/>
+    <Import Sdk="PostSharp.Engineering.Sdk" Project="BuildOptions.props"/>
     <Import Sdk="PostSharp.Engineering.Sdk" Project="SourceLink.props"/>
 
     <PropertyGroup>
-        <Nullable>enable</Nullable>
+        <NoWarn>LAMA0048;CA1050;LAMA0066</NoWarn>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>False</IsPackable>
         <MetalamaWriteHtml>True</MetalamaWriteHtml>
+
+        <!-- The latest version supported by Metalama Compiler may be higher that the latest version supported by Metalama Framework. -->
+        <LangVersion>$(LangMaxVersion)</LangVersion>
     </PropertyGroup>
 
 </Project>

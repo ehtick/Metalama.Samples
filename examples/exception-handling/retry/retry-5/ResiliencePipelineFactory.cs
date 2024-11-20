@@ -19,7 +19,6 @@ internal class ResiliencePipelineFactory : IResiliencePipelineFactory
                             BackoffType = DelayBackoffType.Exponential,
                             MaxRetryAttempts = 10
                         } );
-                    ;
                     break;
 
                 default:

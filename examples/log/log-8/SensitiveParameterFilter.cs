@@ -4,7 +4,7 @@ using Metalama.Framework.Code;
 [CompileTime]
 internal static class SensitiveParameterFilter
 {
-    private static readonly string[] _sensitiveNames = new[] { "password", "credential", "pwd" };
+    private static readonly string[] SensitiveNames = ["password", "credential", "pwd"];
 
     public static bool IsSensitive(IParameter parameter)
     {
@@ -13,7 +13,7 @@ internal static class SensitiveParameterFilter
             return true;
         }
 
-        if (_sensitiveNames.Any(n => parameter.Name.ToLowerInvariant().Contains(n)))
+        if (SensitiveNames.Any(n => parameter.Name.ToLowerInvariant().Contains(n)))
         {
             return true;
         }

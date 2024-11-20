@@ -8,14 +8,14 @@ public interface IConfigurationSource
 [Singleton]
 public sealed class ConfigurationManager
 {
-    private FrozenDictionary<string, string> dictionary;
+    private readonly FrozenDictionary<string, string> _dictionary;
 
     public ConfigurationManager(IConfigurationSource configurationSource)
     {
-        this.dictionary = configurationSource.LoadConfiguration();
+        this._dictionary = configurationSource.LoadConfiguration();
     }
 
-    public string GetValue(string key) => this.dictionary[key];
+    public string GetValue(string key) => this._dictionary[key];
 }
 
 namespace Prod

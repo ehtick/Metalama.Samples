@@ -6,7 +6,7 @@
         xmlns:global="clr-namespace:"
         mc:Ignorable="d"
         Title="My Little Fish Tank" Height="450" Width="800"
-        x:Name="window">
+        x:Name="Window">
     <Window.Resources>
         <global:NotValueConverter x:Key="NotConverter" />
         <global:SpeciesConverter x:Key="SpeciesConverter" />
@@ -24,7 +24,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="24"/>
         </Grid.RowDefinitions>
-        <ListView Name="list" 
+        <ListView Name="List" 
                   Grid.Column="0" 
                   Grid.Row="1" 
                   ItemsSource="{Binding Items}" 
@@ -42,7 +42,7 @@
         </ListView>
         <global:FishControl Grid.Column="1" Grid.Row="1" 
                            DataContext="{Binding CurrentItem}"
-                           IsEnabled="{Binding ElementName=window, Path=DataContext.IsEditing, UpdateSourceTrigger=PropertyChanged}" />
+                           IsEnabled="{Binding ElementName=Window, Path=DataContext.IsEditing, UpdateSourceTrigger=PropertyChanged}" />
         <Grid Grid.Row="2" Grid.Column="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>

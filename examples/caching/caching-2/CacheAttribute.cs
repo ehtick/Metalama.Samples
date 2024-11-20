@@ -31,7 +31,7 @@ public class CacheAttribute : OverrideMethodAspect
 
     public override void BuildEligibility(IEligibilityBuilder<IMethod> builder)
     {
-        builder.MustSatisfy(m => !m.ReturnType.Is(SpecialType.Void),
+        builder.MustSatisfy(m => !m.ReturnType.Equals(SpecialType.Void),
             m => $"{m} cannot be void");
         builder.MustSatisfy(
             m => !m.Parameters.Any(p => p.RefKind is RefKind.Out or RefKind.Ref),

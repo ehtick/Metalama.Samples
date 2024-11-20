@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Drawing;
 using Xunit;
 
 namespace Metalama.Samples.Builder3.UnitTests;

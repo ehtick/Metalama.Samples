@@ -91,10 +91,10 @@ public class RetryAttribute : OverrideMethodAspect
         }
 
         var cancellationTokenParameter
-            = meta.Target.Parameters.LastOrDefault( p => p.Type.Is( typeof( CancellationToken ) ) );
+            = meta.Target.Parameters.LastOrDefault(p => p.Type.Equals(typeof(CancellationToken)));
 
-        var pipeline = this._resiliencePipelineFactory.GetPipeline( this.Kind );
-        return await pipeline.ExecuteAsync( async token => await ExecuteCoreAsync( token ),
+        var pipeline = this._resiliencePipelineFactory.GetPipeline(this.Kind);
+        return await pipeline.ExecuteAsync(async token => await ExecuteCoreAsync(token),
             cancellationTokenParameter != null
                 ? (CancellationToken)cancellationTokenParameter.Value!
                 : CancellationToken.None);

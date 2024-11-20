@@ -1,5 +1,4 @@
-﻿using Metalama.Samples.Builder2;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Metalama.Samples.Builder2.Tests.SimpleExample;
 

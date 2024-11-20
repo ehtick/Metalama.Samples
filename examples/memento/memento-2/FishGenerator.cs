@@ -1,8 +1,8 @@
 ﻿using NameGenerator;
 
-public class FishGenerator : IFishGenerator
+public class FishGenerator(GeneratorBase nameGenerator) : IFishGenerator
 {
-    private static string[] FishSpecies =
+    private static readonly string[] FishSpecies =
     [
         "Clownfish",
         "Damselfish",
@@ -21,16 +21,9 @@ public class FishGenerator : IFishGenerator
         "Scuba Diver"
     ];
 
-    private readonly GeneratorBase _nameGenerator;
-    private readonly Random _random;
+    private readonly Random _random = new();
 
-    public FishGenerator(GeneratorBase nameGenerator)
-    {
-        this._nameGenerator = nameGenerator;
-        this._random = new Random();
-    }
-
-    public string GetNewName() => this._nameGenerator.Generate();
+    public string GetNewName() => nameGenerator.Generate();
 
     public string GetNewSpecies() => FishSpecies[this._random.Next(FishSpecies.Length)];
 }

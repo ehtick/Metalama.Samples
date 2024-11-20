@@ -9,17 +9,17 @@ using System.Globalization;
 [Inheritable]
 public class TrackChangesAttribute : TypeAspect
 {
-    private static readonly DiagnosticDefinition<INamedType> _mustHaveOnChangeMethod = new(
+    private static readonly DiagnosticDefinition<INamedType> MustHaveOnChangeMethod = new(
         "MY001",
         Severity.Error,
         $"The '{nameof(ISwitchableChangeTracking)}' interface is implemented manually on type '{{0}}', but the type does not have an '{nameof(OnChange)}()' method.");
 
-    private static readonly DiagnosticDefinition _onChangeMethodMustBeProtected = new(
+    private static readonly DiagnosticDefinition OnChangeMethodMustBeProtected = new(
         "MY002",
         Severity.Error,
         $"The '{nameof(OnChange)}()' method must be have the 'protected' accessibility.");
 
-    private static readonly DiagnosticDefinition<IMethod> _onPropertyChangedMustBeVirtual = new(
+    private static readonly DiagnosticDefinition<IMethod> OnPropertyChangedMustBeVirtual = new(
         "MY003",
         Severity.Error,
         "The '{0}' method must be virtual.");
@@ -94,11 +94,11 @@ public class TrackChangesAttribute : TypeAspect
             if (onChangeMethod == null)
             {
                 builder.Diagnostics.Report(
-                    _mustHaveOnChangeMethod.WithArguments(builder.Target));
+                    MustHaveOnChangeMethod.WithArguments(builder.Target));
             }
             else if (onChangeMethod.Accessibility != Accessibility.Protected)
             {
-                builder.Diagnostics.Report(_onChangeMethodMustBeProtected);
+                builder.Diagnostics.Report(OnChangeMethodMustBeProtected);
             }
         }
         else
@@ -142,7 +142,7 @@ public class TrackChangesAttribute : TypeAspect
             if (!onPropertyChanged.IsVirtual)
             {
                 builder.Diagnostics.Report(
-                    _onPropertyChangedMustBeVirtual.WithArguments(onPropertyChanged));
+                    OnPropertyChangedMustBeVirtual.WithArguments(onPropertyChanged));
             }
             else
             {

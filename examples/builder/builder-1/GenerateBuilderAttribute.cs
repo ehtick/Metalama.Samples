@@ -2,7 +2,6 @@
 using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using System.ComponentModel.DataAnnotations;
-using System.Net.NetworkInformation;
 
 namespace Metalama.Samples.Builder1;
 

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using Metalama.Framework.Code.SyntaxBuilders;
@@ -50,14 +49,9 @@ internal static class TupleHelper
         void AppendParameterValue(int index)
         {
             var parameter = method.Parameters[index];
-            if (parameter.RefKind != RefKind.Out)
-            {
-                expressionBuilder.AppendExpression(parameter);
-            }
-            else
-            {
-                expressionBuilder.AppendExpression(ExpressionFactory.Default(parameter.Type));
-            }
+            expressionBuilder.AppendExpression(parameter.RefKind == RefKind.Out
+                ? ExpressionFactory.Default(parameter.Type)
+                : parameter);
         }
     }
 

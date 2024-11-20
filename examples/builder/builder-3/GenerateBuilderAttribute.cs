@@ -6,7 +6,7 @@ using Metalama.Framework.Code.SyntaxBuilders;
 namespace Metalama.Samples.Builder3;
 
 [Inheritable]
-public partial class GenerateBuilderAttribute : TypeAspect
+public class GenerateBuilderAttribute : TypeAspect
 {
     [CompileTime]
     private record Tags(
@@ -83,7 +83,7 @@ public partial class GenerateBuilderAttribute : TypeAspect
                     baseBuilderCopyConstructor = baseBuilderType.Constructors
                         .SingleOrDefault(c =>
                             c.Parameters.Count == 1 &&
-                            c.Parameters[0].Type == sourceType.BaseType);
+                            c.Parameters[0].Type.Equals(sourceType.BaseType));
 
                     if (baseBuilderCopyConstructor == null)
                     {
@@ -132,7 +132,7 @@ public partial class GenerateBuilderAttribute : TypeAspect
         // Add builder properties and update the mapping.
         foreach (var property in properties)
         {
-            if (property.SourceProperty.DeclaringType == sourceType)
+            if (property.SourceProperty.DeclaringType.Equals(sourceType))
             {
                 // For properties of the current type, introduce a new property.
                 property.ImplementBuilderArtifacts(builderType);
@@ -155,7 +155,7 @@ public partial class GenerateBuilderAttribute : TypeAspect
         // [<endsnippet CreateBuilderProperties>]
 
         // Add a builder constructor accepting the required properties and update the mapping.
-        var builderConstructor = builderType.IntroduceConstructor(
+        builderType.IntroduceConstructor(
             nameof(this.BuilderConstructorTemplate),
             buildConstructor: c =>
             {
@@ -314,9 +314,9 @@ public partial class GenerateBuilderAttribute : TypeAspect
 
         foreach (var property in tags.Properties.Where(p => !p.IsInherited))
         {
-            if (property.SourceProperty.DeclaringType == meta.Target.Type)
+            if (property.SourceProperty.DeclaringType.Equals(meta.Target.Type))
             {
-                property.SourceProperty!.Value =
+                property.SourceProperty.Value =
                     meta.Target.Parameters[property.SourceConstructorParameterIndex!.Value].Value;
             }
         }

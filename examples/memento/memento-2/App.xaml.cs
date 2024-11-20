@@ -4,17 +4,14 @@ using NameGenerator;
 using NameGenerator.Generators;
 using System.Windows;
 
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
-public partial class App : Application
+public partial class App
 {
-    public static IHost? Host { get; private set; }
+    private static IHost? _host;
 
     public App()
     {
-        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
-            .ConfigureServices((context, services) =>
+        _host = Host.CreateDefaultBuilder()
+            .ConfigureServices((_, services) =>
             {
                 // Add windows
                 services.AddSingleton<MainWindow>();
@@ -32,9 +29,9 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
-        await Host!.StartAsync();
+        await _host!.StartAsync();
 
-        var mainWindow = Host.Services.GetRequiredService<MainWindow>();
+        var mainWindow = _host.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
 
         base.OnStartup(e);
@@ -42,7 +39,7 @@ public partial class App : Application
 
     protected override async void OnExit(ExitEventArgs e)
     {
-        await Host!.StopAsync();
+        await _host!.StopAsync();
         base.OnExit(e);
     }
 }

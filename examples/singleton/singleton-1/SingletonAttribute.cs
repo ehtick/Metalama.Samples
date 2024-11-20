@@ -15,7 +15,7 @@ public class SingletonAttribute : TypeAspect
 
     // [<snippet PrivateConstructorDiagnostic>]
     private static readonly DiagnosticDefinition<(IConstructor, INamedType)>
-        _constructorHasToBePrivate = new(
+        ConstructorHasToBePrivate = new(
             "SING01",
             Severity.Warning,
             "The '{0}' constructor must be private because the class is [Singleton].");
@@ -49,7 +49,7 @@ public class SingletonAttribute : TypeAspect
                 !constructor.IsImplicitlyDeclared)
             {
                 builder.Diagnostics.Report(
-                    _constructorHasToBePrivate.WithArguments((constructor, builder.Target)),
+                    ConstructorHasToBePrivate.WithArguments((constructor, builder.Target)),
                     constructor);
             }
         }

@@ -2,7 +2,7 @@
 
 internal class SpeciesConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter,
+    public object Convert(object? value, Type targetType, object? parameter,
         System.Globalization.CultureInfo culture)
     {
         if (value is string s)
@@ -25,6 +25,6 @@ internal class SpeciesConverter : IValueConverter
         return "";
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter,
+    public object ConvertBack(object? value, Type targetType, object? parameter,
         System.Globalization.CultureInfo culture) => "";
 }

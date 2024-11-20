@@ -19,7 +19,7 @@ internal class NotifyPropertyChangedAttribute : TypeAspect
         }
     }
 
-    [Introduce] private static readonly Dictionary<string, string[]> _propertyDependencies =
+    [Introduce] private static readonly Dictionary<string, string[]> PropertyDependencies =
         DependencyHelper.GetPropertyDependencyGraph(meta.Target.Type);
 
 
@@ -39,9 +39,9 @@ internal class NotifyPropertyChangedAttribute : TypeAspect
             this.PropertyChanged?.Invoke(meta.This, new PropertyChangedEventArgs(name));
         }
 
-        if (_propertyDependencies.TryGetValue(name, out var dependentProperties))
+        if (PropertyDependencies.TryGetValue(name, out var dependentProperties))
         {
-            foreach (var dependentProperty in dependentProperties!)
+            foreach (var dependentProperty in dependentProperties)
             {
                 this.OnPropertyChanged(dependentProperty);
             }

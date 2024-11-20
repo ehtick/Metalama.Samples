@@ -11,25 +11,25 @@ public static class CachingOptionsExtensions
 {
     private static readonly ConditionalWeakTable<CachingOptions,
             ImmutableDictionary<string, CacheBuilderRegistration>>
-        _cache = new();
+        Cache = new();
 
 
-    private static readonly DiagnosticDefinition<IType> _error = new("CACHE01", Severity.Error,
+    private static readonly DiagnosticDefinition<IType> Error = new("CACHE01", Severity.Error,
         "The type '{0}' cannot be a part of a cache key. Implement ICacheKey, use [CacheKeyMember] or register a cache key builder.");
 
     private static ImmutableDictionary<string, CacheBuilderRegistration> GetRegistrations(
         CachingOptions cachingOptions)
     {
-        lock (_cache)
+        lock (Cache)
         {
-            if (_cache.TryGetValue(cachingOptions, out var dictionary))
+            if (Cache.TryGetValue(cachingOptions, out var dictionary))
             {
                 return dictionary;
             }
 
             dictionary =
                 cachingOptions.Registrations.ToImmutableDictionary(x => x.KeyType, x => x);
-            _cache.Add(cachingOptions, dictionary);
+            Cache.Add(cachingOptions, dictionary);
             return dictionary;
         }
     }
@@ -68,14 +68,14 @@ public static class CachingOptionsExtensions
         }
 
         // Check ICacheKey.
-        if (expression.Type.Is(typeof(ICacheKey)) ||
+        if (expression.Type.IsConvertibleTo(typeof(ICacheKey)) ||
             (expression.Type is INamedType { BelongsToCurrentProject: true } namedType &&
              namedType.Enhancements().HasAspect<GenerateCacheKeyAspect>()))
         {
             return true;
         }
 
-        diagnosticSink.Report(_error.WithArguments(expression.Type), expression);
+        diagnosticSink.Report(Error.WithArguments(expression.Type), expression);
         return false;
     }
 
@@ -118,7 +118,7 @@ public static class CachingOptionsExtensions
                 }
             }
         }
-        else if (expression.Type.Is(typeof(ICacheKey)) ||
+        else if (expression.Type.IsConvertibleTo(typeof(ICacheKey)) ||
                  (expression.Type is INamedType namedType &&
                   namedType.Enhancements().HasAspect<GenerateCacheKeyAspect>()))
         {

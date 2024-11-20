@@ -56,7 +56,7 @@ We will first explain the implementation of the second requirement.
 
 As usual, we first need to define the error as a static field of the class:
 
-[!metalama-file CloneableAttribute.cs member="CloneableAttribute._annotateFieldOrProperty"]
+[!metalama-file CloneableAttribute.cs member="CloneableAttribute.AnnotateFieldOrProperty"]
 
 Then, we detect unannotated properties of a cloneable type. And report the warnings with suggestions for code fixes:
 

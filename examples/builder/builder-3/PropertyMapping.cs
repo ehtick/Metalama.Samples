@@ -2,7 +2,6 @@
 using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using Metalama.Framework.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Metalama.Samples.Builder3;
 

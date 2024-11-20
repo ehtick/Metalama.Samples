@@ -8,7 +8,7 @@ namespace Metalama.Samples.Builder3;
 [CompileTime]
 internal class PropertyMappingFactory
 {
-    private static readonly HashSet<string> _immutableCollectionTypes =
+    private static readonly HashSet<string> ImmutableCollectionTypes =
     [
         nameof(ImmutableArray),
         nameof(ImmutableList),
@@ -28,7 +28,7 @@ internal class PropertyMappingFactory
     public PropertyMapping Create(IProperty sourceProperty)
     {
         var isRequired = sourceProperty.Attributes.OfAttributeType(typeof(RequiredAttribute)).Any();
-        var isInherited = sourceProperty.DeclaringType != this._sourceType;
+        var isInherited = !sourceProperty.DeclaringType.Equals(this._sourceType);
 
         if (IsImmutableCollectionType(sourceProperty.Type))
         {
@@ -45,5 +45,5 @@ internal class PropertyMappingFactory
            {
                ContainingNamespace.FullName: "System.Collections.Immutable"
            } namedType
-           && _immutableCollectionTypes.Contains(namedType.Name);
+           && ImmutableCollectionTypes.Contains(namedType.Name);
 }

@@ -2,7 +2,6 @@
 using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 
 namespace Metalama.Samples.Builder2;
 
@@ -84,7 +83,7 @@ public partial class GenerateBuilderAttribute : TypeAspect
                     baseBuilderCopyConstructor = baseBuilderType.Constructors
                         .SingleOrDefault(c =>
                             c.Parameters.Count == 1 &&
-                            c.Parameters[0].Type == sourceType.BaseType);
+                            c.Parameters[0].Type.Equals(sourceType.BaseType));
 
                     if (baseBuilderCopyConstructor == null)
                     {
@@ -119,7 +118,7 @@ public partial class GenerateBuilderAttribute : TypeAspect
                 {
                     var isRequired = p.Attributes.OfAttributeType(typeof(RequiredAttribute))
                         .Any();
-                    var isInherited = p.DeclaringType != sourceType;
+                    var isInherited = !p.DeclaringType.Equals(sourceType);
                     return new PropertyMapping(p, isRequired, isInherited);
                 })
             .ToList();

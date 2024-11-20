@@ -10,20 +10,20 @@ public class CloneableAttribute : TypeAspect
     // [<snippet DiagnosticDefinitions>]
     private static readonly
         DiagnosticDefinition<(DeclarationKind, IFieldOrProperty)>
-        _fieldOrPropertyCannotBeReadOnly =
+        FieldOrPropertyCannotBeReadOnly =
             new("CLONE01", Severity.Error,
                 "The {0} '{1}' cannot be read-only because it is marked as a [Child].");
 
     private static readonly DiagnosticDefinition<(DeclarationKind, IFieldOrProperty, IType)>
-        _missingCloneMethod =
+        MissingCloneMethod =
             new("CLONE02", Severity.Error,
                 "The {0} '{1}' cannot be a [Child] because its type '{2}' does not have a 'Clone' parameterless method.");
 
-    private static readonly DiagnosticDefinition<IMethod> _cloneMethodMustBePublic =
+    private static readonly DiagnosticDefinition<IMethod> CloneMethodMustBePublic =
         new("CLONE03", Severity.Error,
             "The '{0}' method must be public or internal.");
 
-    private static readonly DiagnosticDefinition<IProperty> _childPropertyMustBeAutomatic =
+    private static readonly DiagnosticDefinition<IProperty> ChildPropertyMustBeAutomatic =
         new("CLONE04", Severity.Error,
             "The property '{0}' cannot be a [Child] because is not an automatic property.");
     // [<endsnippet DiagnosticDefinitions>]
@@ -76,16 +76,16 @@ public class CloneableAttribute : TypeAspect
             if (fieldOrProperty.Writeability != Writeability.All)
             {
                 builder.Diagnostics.Report(
-                    _fieldOrPropertyCannotBeReadOnly.WithArguments((
+                    FieldOrPropertyCannotBeReadOnly.WithArguments((
                         fieldOrProperty.DeclarationKind,
                         fieldOrProperty)), fieldOrProperty);
                 success = false;
             }
 
             // If it is a field, it must be an automatic property.
-            if (fieldOrProperty is IProperty property && property.IsAutoPropertyOrField == false)
+            if (fieldOrProperty is IProperty { IsAutoPropertyOrField: false } property)
             {
-                builder.Diagnostics.Report(_childPropertyMustBeAutomatic.WithArguments(property),
+                builder.Diagnostics.Report(ChildPropertyMustBeAutomatic.WithArguments(property),
                     property);
                 success = false;
             }
@@ -94,7 +94,7 @@ public class CloneableAttribute : TypeAspect
             void ReportMissingMethod()
             {
                 builder.Diagnostics.Report(
-                    _missingCloneMethod.WithArguments((fieldOrProperty.DeclarationKind,
+                    MissingCloneMethod.WithArguments((fieldOrProperty.DeclarationKind,
                         fieldOrProperty,
                         fieldOrProperty.Type)), fieldOrProperty);
             }
@@ -113,7 +113,7 @@ public class CloneableAttribute : TypeAspect
                 if (cloneMethod == null)
                 {
                     // There is no Clone method.
-                    // If may be implemented by an aspect, but we don't have access to aspects on other types
+                    // It may be implemented by an aspect, but we don't have access to aspects on other types
                     // at design time.
                     if (!MetalamaExecutionContext.Current.ExecutionScenario.IsDesignTime)
                     {
@@ -130,7 +130,7 @@ public class CloneableAttribute : TypeAspect
                 {
                     // If we have a Clone method, it must be public.
                     builder.Diagnostics.Report(
-                        _cloneMethodMustBePublic.WithArguments(cloneMethod), fieldOrProperty);
+                        CloneMethodMustBePublic.WithArguments(cloneMethod), fieldOrProperty);
                     success = false;
                 }
             }
@@ -164,7 +164,7 @@ public class CloneableAttribute : TypeAspect
         // Define a local variable of the same type as the target type.
         var clone = (T)baseCall.Value!;
 
-        // Call CloneMembers, which may have a hand-written part.
+        // Call CloneMembers, which may have a handwritten part.
         meta.This.CloneMembers(clone);
 
 
@@ -185,7 +185,7 @@ public class CloneableAttribute : TypeAspect
             field.With(clone).Value = meta.Cast(fieldType, field.Value?.Clone());
         }
 
-        // Call the hand-written implementation, if any.
+        // Call the handwritten implementation, if any.
         meta.Proceed();
     }
 

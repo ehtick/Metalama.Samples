@@ -1,6 +1,5 @@
 ﻿using Metalama.Extensions.DependencyInjection;
 using Metalama.Framework.Aspects;
-using Metalama.Framework.Code;
 using Metalama.Framework.Code.SyntaxBuilders;
 using Microsoft.Extensions.Logging;
 
@@ -57,7 +56,7 @@ public class RetryAttribute : OverrideMethodAspect
     public override async Task<dynamic?> OverrideAsyncMethod()
     {
         var cancellationTokenParameter
-            = meta.Target.Parameters.LastOrDefault(p => p.Type.Is(typeof(CancellationToken)));
+            = meta.Target.Parameters.LastOrDefault(p => p.Type.Equals(typeof(CancellationToken)));
 
         for (var i = 0;; i++)
         {

@@ -1,4 +1,3 @@
-using Metalama.Samples.Builder3;
 using System.ComponentModel.DataAnnotations;
 namespace Metalama.Samples.Builder3.Tests.SimpleExample;
 #pragma warning disable CS8618 //  Non-nullable property must contain a non-null value when exiting constructor.

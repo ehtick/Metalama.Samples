@@ -7,12 +7,12 @@ using Microsoft.Extensions.Logging;
 
 public class LogAttribute : MethodAspect
 {
-    private static readonly DiagnosticDefinition<INamedType> _missingLoggerFieldError =
+    private static readonly DiagnosticDefinition<INamedType> MissingLoggerFieldError =
         new("LOG01", Severity.Error,
             "The type '{0}' must have a field 'ILogger _logger' or a property 'ILogger Logger'.");
 
     private static readonly DiagnosticDefinition<( DeclarationKind, IFieldOrProperty)>
-        _loggerFieldOrIncorrectTypeError =
+        LoggerFieldOrIncorrectTypeError =
             new("LOG02", Severity.Error, "The {0} '{1}' must be of type ILogger.");
 
     public override void BuildAspect(IAspectBuilder<IMethod> builder)
@@ -27,16 +27,16 @@ public class LogAttribute : MethodAspect
         // Report an error if the field or property does not exist.
         if (loggerFieldOrProperty == null)
         {
-            builder.Diagnostics.Report(_missingLoggerFieldError.WithArguments(declaringType));
+            builder.Diagnostics.Report(MissingLoggerFieldError.WithArguments(declaringType));
 
             return;
         }
 
         // Verify the type of the logger field or property.
-        if (!loggerFieldOrProperty.Type.Is(typeof(ILogger)))
+        if (!loggerFieldOrProperty.Type.IsConvertibleTo(typeof(ILogger)))
         {
             builder.Diagnostics.Report(
-                _loggerFieldOrIncorrectTypeError.WithArguments((declaringType.DeclarationKind,
+                LoggerFieldOrIncorrectTypeError.WithArguments((declaringType.DeclarationKind,
                     loggerFieldOrProperty)));
 
             return;
@@ -83,7 +83,7 @@ public class LogAttribute : MethodAspect
                 // Display the success message. The message is different when the method is void.
                 var successMessage = BuildInterpolatedString(true);
 
-                if (meta.Target.Method.ReturnType.Is(typeof(void)))
+                if (meta.Target.Method.ReturnType.Equals(typeof(void)))
                 {
                     // When the method is void, display a constant text.
                     successMessage.AddText(" succeeded.");

@@ -28,8 +28,8 @@ The result of this aspect will be two new errors:
 
 The first thing we add to the `TrackChangesAttribute` is two static fields to _define_ the errors:
 
-[!metalama-file TrackChangesAttribute.cs member="TrackChangesAttribute._mustHaveOnChangeMethod"]
-[!metalama-file TrackChangesAttribute.cs member="TrackChangesAttribute._onChangeMethodMustBeProtected"]
+[!metalama-file TrackChangesAttribute.cs member="TrackChangesAttribute.MustHaveOnChangeMethod"]
+[!metalama-file TrackChangesAttribute.cs member="TrackChangesAttribute.OnChangeMethodMustBeProtected"]
 
 Metalama requires the <xref:Metalama.Framework.Diagnostics.DiagnosticDefinition> to be defined in a static field or
 property. To learn more about reporting errors, see <xref:diagnostics>.

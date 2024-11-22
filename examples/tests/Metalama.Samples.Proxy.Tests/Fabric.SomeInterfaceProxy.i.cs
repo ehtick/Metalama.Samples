@@ -1,0 +1,54 @@
+using System.Reflection;
+namespace Metalama.Samples.Proxy.Tests.Fabric
+{
+  public class SomeInterfaceProxy : ISomeInterface
+  {
+    private ISomeInterface _intercepted;
+    private IInterceptor _interceptor;
+    private static InterceptionMetadata _metadata1;
+    private static InterceptionMetadata _metadata2;
+    private static InterceptionMetadata _metadata3;
+    static SomeInterfaceProxy()
+    {
+      _metadata1 = new InterceptionMetadata(typeof(ISomeInterface).GetMethod("VoidMethod", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(int), typeof(string) }, null), false);
+      _metadata2 = new InterceptionMetadata(typeof(ISomeInterface).GetMethod("NonVoidMethod", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(int), typeof(string) }, null), false);
+      _metadata3 = new InterceptionMetadata(typeof(ISomeInterface).GetMethod("VoidNoParamMethod", BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null), false);
+    }
+    public SomeInterfaceProxy(IInterceptor interceptor, ISomeInterface intercepted)
+    {
+      _interceptor = interceptor;
+      _intercepted = intercepted;
+    }
+    public int NonVoidMethod(int a, string b)
+    {
+      var args = (a, b);
+      return _interceptor.Invoke(ref args, _metadata2, Invoke);
+      int Invoke(ref (int, string) receivedArgs)
+      {
+        return _intercepted.NonVoidMethod(receivedArgs.Item1, receivedArgs.Item2);
+      }
+    }
+    public void VoidMethod(int a, string b)
+    {
+      var args = (a, b);
+      _interceptor.Invoke(ref args, _metadata1, Invoke);
+      return;
+      ValueTuple Invoke(ref (int, string) receivedArgs)
+      {
+        _intercepted.VoidMethod(receivedArgs.Item1, receivedArgs.Item2);
+        return default;
+      }
+    }
+    public void VoidNoParamMethod()
+    {
+      var args = default(ValueTuple);
+      _interceptor.Invoke(ref args, _metadata3, Invoke);
+      return;
+      ValueTuple Invoke(ref ValueTuple receivedArgs)
+      {
+        _intercepted.VoidNoParamMethod();
+        return default;
+      }
+    }
+  }
+}

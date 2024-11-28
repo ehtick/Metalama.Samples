@@ -20,6 +20,5 @@
     <ItemGroup>
       <ProjectReference Include="..\..\Metalama.Samples.Proxy\Metalama.Samples.Proxy.csproj" />
     </ItemGroup>
-    
   
 </Project>

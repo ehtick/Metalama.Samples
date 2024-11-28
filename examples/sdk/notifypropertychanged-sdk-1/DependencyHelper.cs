@@ -52,7 +52,7 @@ public static class DependencyHelper
         // Note that we limit the analysis to the current type. If a property of a _derived_ type depends
         // on a property of the current type, we won't detect it.
         return properties
-            .Where(p => p.ContainingType.Equals(propertySymbol.ContainingType, SymbolEqualityComparer.Default ))
+            .Where(p => p.ContainingType.Equals(propertySymbol.ContainingType, SymbolEqualityComparer.Default))
             .Select(p => p.Name);
     }
 

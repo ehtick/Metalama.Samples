@@ -20,13 +20,5 @@
     <ItemGroup>
       <ProjectReference Include="..\..\Metalama.Samples.Proxy\Metalama.Samples.Proxy.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Compile Update="Async.cs">
-        <DependentUpon>$([System.String]::Copy('Simple').Substring( %(Filename.IndexOf('.') ).cs</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-    </ItemGroup>
-    
   
 </Project>

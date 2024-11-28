@@ -1,9 +1,8 @@
 using System.Reflection;
-using Metalama.Samples.Proxy.Tests.Simple;
 
-namespace Metalama.Samples.Proxy.Tests
+namespace Metalama.Samples.Proxy.Tests.Fabric
 {
-    public class SomeProxy : ISomeInterface
+    public class SomeInterfaceProxy : ISomeInterface
     {
         private ISomeInterface _intercepted;
         private IInterceptor _interceptor;
@@ -11,7 +10,7 @@ namespace Metalama.Samples.Proxy.Tests
         private static InterceptionMetadata _metadata2;
         private static InterceptionMetadata _metadata3;
 
-        static SomeProxy()
+        static SomeInterfaceProxy()
         {
             _metadata1 = new InterceptionMetadata(
                 typeof(ISomeInterface).GetMethod("VoidMethod",
@@ -27,7 +26,7 @@ namespace Metalama.Samples.Proxy.Tests
                 false);
         }
 
-        public SomeProxy(IInterceptor interceptor, ISomeInterface intercepted)
+        public SomeInterfaceProxy(IInterceptor interceptor, ISomeInterface intercepted)
         {
             _interceptor = interceptor;
             _intercepted = intercepted;

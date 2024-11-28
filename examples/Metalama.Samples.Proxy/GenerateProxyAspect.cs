@@ -9,20 +9,31 @@ namespace Metalama.Samples.Proxy;
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 public sealed class GenerateProxyAspect : CompilationAspect
 {
-    private readonly Type _interfaceType;
+    private readonly object _interfaceType;
     private readonly string _ns;
     private readonly string _typeName;
 
-    public GenerateProxyAspect(Type interfaceType, string ns, string typeName)
+    public GenerateProxyAspect(Type interfaceType, string typeName, string? ns = null)
     {
         this._interfaceType = interfaceType;
-        this._ns = ns;
+        this._ns = ns ?? interfaceType.Namespace ?? "";
+        this._typeName = typeName;
+    }
+    
+    public GenerateProxyAspect(INamedType interfaceType, string typeName, string? ns = null)
+    {
+        this._interfaceType = interfaceType;
+        this._ns = ns ?? interfaceType.ContainingNamespace.FullName;
         this._typeName = typeName;
     }
 
     public override void BuildAspect(IAspectBuilder<ICompilation> builder)
     {
         base.BuildAspect(builder);
+
+        var interfaceType = this._interfaceType as INamedType ??
+                            (INamedType) TypeFactory.GetType((Type)this._interfaceType);
+    
 
         // Add a type.
         var type = builder.WithNamespace(this._ns).IntroduceClass(this._typeName,
@@ -32,7 +43,7 @@ public sealed class GenerateProxyAspect : CompilationAspect
         // Add a field with the intercepted object.
         var interceptedField = type.IntroduceField(
                 "_intercepted",
-                this._interfaceType,
+                interfaceType,
                 IntroductionScope.Instance)
             .Declaration;
 
@@ -41,15 +52,14 @@ public sealed class GenerateProxyAspect : CompilationAspect
             .Declaration;
 
         // Implement the interface.
-        type.ImplementInterface(this._interfaceType);
+        type.ImplementInterface(interfaceType);
 
         // Implement interface members.
-        var namedType = (INamedType)TypeFactory.GetType(this._interfaceType);
         var methodIndex = 0;
 
         var metadataList = new List<InterceptionMetadataInfo>();
         
-        foreach (var method in namedType.Methods)
+        foreach (var method in interfaceType.Methods)
         {
             methodIndex++;
 
@@ -102,7 +112,7 @@ public sealed class GenerateProxyAspect : CompilationAspect
                     default:
                         builder.Diagnostics.Report(
                             DiagnosticDefinitions.AwaitableTypeNotSupported.WithArguments((
-                                namedType, method)));
+                                interfaceType, method)));
                         continue;
                 }
             }
@@ -143,7 +153,7 @@ public sealed class GenerateProxyAspect : CompilationAspect
         type.IntroduceConstructor(
             nameof(this.Constructor),
             buildConstructor: constructorBuilder
-                => constructorBuilder.AddParameter("intercepted", this._interfaceType),
+                => constructorBuilder.AddParameter("intercepted", interfaceType),
             args: new { interceptedField, interceptorField });
         
         type.AddInitializer(nameof(this.StaticConstructor), InitializerKind.BeforeTypeConstructor, args: new { metadataList });

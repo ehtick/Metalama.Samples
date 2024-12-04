@@ -11,35 +11,36 @@ public partial class App
     public App()
     {
         _host = Host.CreateDefaultBuilder()
-            .ConfigureServices((_, services) =>
-            {
-                // Add windows
-                services.AddSingleton<MainWindow>();
+            .ConfigureServices(
+                ( _, services ) =>
+                {
+                    // Add windows
+                    services.AddSingleton<MainWindow>();
 
-                // Add root view models
-                services.AddSingleton<MainViewModel>();
+                    // Add root view models
+                    services.AddSingleton<MainViewModel>();
 
-                // Add services
-                services.AddSingleton<IMementoCaretaker, Caretaker>();
-                services.AddSingleton<IFishGenerator, FishGenerator>();
-                services.AddSingleton<GeneratorBase, RealNameGenerator>();
-            })
+                    // Add services
+                    services.AddSingleton<IMementoCaretaker, Caretaker>();
+                    services.AddSingleton<IFishGenerator, FishGenerator>();
+                    services.AddSingleton<GeneratorBase, RealNameGenerator>();
+                } )
             .Build();
     }
 
-    protected override async void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup( StartupEventArgs e )
     {
         await _host!.StartAsync();
 
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
 
-        base.OnStartup(e);
+        base.OnStartup( e );
     }
 
-    protected override async void OnExit(ExitEventArgs e)
+    protected override async void OnExit( ExitEventArgs e )
     {
         await _host!.StopAsync();
-        base.OnExit(e);
+        base.OnExit( e );
     }
 }

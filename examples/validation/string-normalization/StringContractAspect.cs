@@ -6,11 +6,11 @@ namespace Metalama.Samples.NormalizeStrings;
 
 public abstract class StringContractAspect : ContractAspect
 {
-    public override void BuildEligibility(IEligibilityBuilder<IFieldOrPropertyOrIndexer> builder)
-        => builder.Type().MustEqual(typeof(string));
+    public override void BuildEligibility( IEligibilityBuilder<IFieldOrPropertyOrIndexer> builder )
+        => builder.Type().MustEqual( typeof(string) );
 
-    public override void BuildEligibility(IEligibilityBuilder<IParameter> builder)
-        => builder.Type().MustEqual(typeof(string));
+    public override void BuildEligibility( IEligibilityBuilder<IParameter> builder )
+        => builder.Type().MustEqual( typeof(string) );
 
     [CompileTime]
     protected static bool IsAppliedToNullableString()

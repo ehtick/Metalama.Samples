@@ -1,12 +1,14 @@
 ﻿public class BlobId
 {
-    public BlobId(string container, byte[] hash)
+    public BlobId( string container, byte[] hash )
     {
         this.Container = container;
         this.Hash = hash;
     }
 
-    [CacheKeyMember] public string Container { get; }
+    [CacheKeyMember]
+    public string Container { get; }
 
-    [CacheKeyMember] public byte[] Hash { get; }
+    [CacheKeyMember]
+    public byte[] Hash { get; }
 }

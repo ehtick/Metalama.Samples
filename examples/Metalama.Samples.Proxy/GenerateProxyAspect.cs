@@ -6,63 +6,64 @@ using Metalama.Framework.Code.SyntaxBuilders;
 
 namespace Metalama.Samples.Proxy;
 
-[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+[AttributeUsage( AttributeTargets.Assembly, AllowMultiple = true )]
 public sealed class GenerateProxyAspect : CompilationAspect
 {
     private readonly Type _interfaceType;
     private readonly string _ns;
     private readonly string _typeName;
 
-    public GenerateProxyAspect(Type interfaceType, string ns, string typeName)
+    public GenerateProxyAspect( Type interfaceType, string ns, string typeName )
     {
         this._interfaceType = interfaceType;
         this._ns = ns;
         this._typeName = typeName;
     }
 
-    public override void BuildAspect(IAspectBuilder<ICompilation> builder)
+    public override void BuildAspect( IAspectBuilder<ICompilation> builder )
     {
-        base.BuildAspect(builder);
+        base.BuildAspect( builder );
 
         // Add a type.
-        var type = builder.WithNamespace(this._ns).IntroduceClass(this._typeName,
-            buildType: t => t.Accessibility = Accessibility.Public);
-
+        var type = builder.WithNamespace( this._ns )
+            .IntroduceClass(
+                this._typeName,
+                buildType: t => t.Accessibility = Accessibility.Public );
 
         // Add a field with the intercepted object.
         var interceptedField = type.IntroduceField(
                 "_intercepted",
                 this._interfaceType,
-                IntroductionScope.Instance)
+                IntroductionScope.Instance )
             .Declaration;
 
         // Add a field for the interceptor.
-        var interceptorField = type.IntroduceField("_interceptor", typeof(IInterceptor))
+        var interceptorField = type.IntroduceField( "_interceptor", typeof(IInterceptor) )
             .Declaration;
 
         // Implement the interface.
-        type.ImplementInterface(this._interfaceType);
+        type.ImplementInterface( this._interfaceType );
 
         // Implement interface members.
-        var namedType = (INamedType)TypeFactory.GetType(this._interfaceType);
+        var namedType = (INamedType) TypeFactory.GetType( this._interfaceType );
         var methodIndex = 0;
 
         var metadataList = new List<InterceptionMetadataInfo>();
-        
-        foreach (var method in namedType.Methods)
+
+        foreach ( var method in namedType.Methods )
         {
             methodIndex++;
 
-            var argsType = TupleHelper.CreateTupleType(method);
+            var argsType = TupleHelper.CreateTupleType( method );
             var asyncInfo = method.GetAsyncInfo();
-            var hasByRefParameter = method.Parameters.Any(p => p.RefKind != RefKind.None);
+            var hasByRefParameter = method.Parameters.Any( p => p.RefKind != RefKind.None );
 
             string templateName;
             IType resultType;
 
-            if (!asyncInfo.IsAwaitable || hasByRefParameter)
+            if ( !asyncInfo.IsAwaitable || hasByRefParameter )
             {
-                if (method.ReturnType.Equals(SpecialType.Void))
+                if ( method.ReturnType.Equals( SpecialType.Void ) )
                 {
                     templateName = nameof(this.VoidMethodTemplate);
                 }
@@ -75,44 +76,52 @@ public sealed class GenerateProxyAspect : CompilationAspect
             }
             else
             {
-                var returnType = (INamedType)method.ReturnType;
+                var returnType = (INamedType) method.ReturnType;
 
-                switch (returnType.Definition.SpecialType)
+                switch ( returnType.Definition.SpecialType )
                 {
                     case SpecialType.Task:
                         templateName = nameof(this.TaskMethodTemplate);
-                        resultType = TypeFactory.GetType(SpecialType.Void);
+                        resultType = TypeFactory.GetType( SpecialType.Void );
+
                         break;
 
                     case SpecialType.Task_T:
                         templateName = nameof(this.TaskOfTMethodTemplate);
                         resultType = returnType.TypeArguments[0];
+
                         break;
 
                     case SpecialType.ValueTask:
                         templateName = nameof(this.ValueTaskMethodTemplate);
-                        resultType = TypeFactory.GetType(SpecialType.Void);
+                        resultType = TypeFactory.GetType( SpecialType.Void );
+
                         break;
 
                     case SpecialType.ValueTask_T:
                         templateName = nameof(this.ValueTaskOfTMethodTemplate);
                         resultType = returnType.TypeArguments[0];
+
                         break;
 
                     default:
                         builder.Diagnostics.Report(
-                            DiagnosticDefinitions.AwaitableTypeNotSupported.WithArguments((
-                                namedType, method)));
+                            DiagnosticDefinitions.AwaitableTypeNotSupported.WithArguments(
+                                (
+                                    namedType, method) ) );
+
                         continue;
                 }
             }
 
             var metadataField =
-                type.IntroduceField($"_metadata{methodIndex}", typeof(InterceptionMetadata),
+                type.IntroduceField(
+                        $"_metadata{methodIndex}",
+                        typeof(InterceptionMetadata),
                         buildField: field => field.IsStatic = true )
                     .Declaration;
-            
-            metadataList.Add(new InterceptionMetadataInfo(method, metadataField, asyncInfo.IsAwaitable));
+
+            metadataList.Add( new InterceptionMetadataInfo( method, metadataField, asyncInfo.IsAwaitable ) );
 
             type.IntroduceMethod(
                 templateName,
@@ -123,80 +132,97 @@ public sealed class GenerateProxyAspect : CompilationAspect
                     methodBuilder.Name = method.Name;
                     methodBuilder.ReturnType = method.ReturnType;
 
-                    foreach (var parameter in method.Parameters)
+                    foreach ( var parameter in method.Parameters )
                     {
                         methodBuilder.AddParameter(
                             parameter.Name,
                             parameter.Type,
-                            parameter.RefKind);
+                            parameter.RefKind );
                     }
                 },
                 args:
                 new
                 {
-                    TArgs = argsType, TResult = resultType, method, interceptedField,
-                    interceptorField, metadataField
-                });
+                    TArgs = argsType,
+                    TResult = resultType,
+                    method,
+                    interceptedField,
+                    interceptorField,
+                    metadataField
+                } );
         }
 
         // Add the constructor.
         type.IntroduceConstructor(
             nameof(this.Constructor),
             buildConstructor: constructorBuilder
-                => constructorBuilder.AddParameter("intercepted", this._interfaceType),
-            args: new { interceptedField, interceptorField });
-        
-        type.AddInitializer(nameof(this.StaticConstructor), InitializerKind.BeforeTypeConstructor, args: new { metadataList });
+                => constructorBuilder.AddParameter( "intercepted", this._interfaceType ),
+            args: new { interceptedField, interceptorField } );
+
+        type.AddInitializer(
+            nameof(this.StaticConstructor),
+            InitializerKind.BeforeTypeConstructor,
+            args: new { metadataList } );
     }
 
     [Template]
     private void VoidMethodTemplate<[CompileTime] TArgs>(
-        IMethod method, IField interceptedField, IField interceptorField, IField metadataField)
+        IMethod method,
+        IField interceptedField,
+        IField interceptorField,
+        IField metadataField )
         where TArgs : struct, ITuple
     {
         // Prepare the context.
-        var args = (TArgs)TupleHelper.CreateTupleExpression(method).Value!;
-        var argsExpression = ExpressionFactory.Capture(args);
+        var args = (TArgs) TupleHelper.CreateTupleExpression( method ).Value!;
+        var argsExpression = ExpressionFactory.Capture( args );
 
         // Get writable parameters.
-        var writableParameters = method.Parameters.Where(p =>
-            p.RefKind is RefKind.Out or RefKind.Ref).ToList();
+        var writableParameters = method.Parameters.Where(
+                p =>
+                    p.RefKind is RefKind.Out or RefKind.Ref )
+            .ToList();
 
         // Invoke the interceptor.
-        if (writableParameters.Count == 0)
+        if ( writableParameters.Count == 0 )
         {
             // We don't need a try...finally if we don't have to write back writable parameters.
-            ((IInterceptor)interceptorField.Value!).Invoke(ref args,
-                (InterceptionMetadata)metadataField.Value!, Invoke);
+            ((IInterceptor) interceptorField.Value!).Invoke(
+                ref args,
+                (InterceptionMetadata) metadataField.Value!,
+                Invoke );
         }
         else
         {
             try
             {
-                ((IInterceptor)interceptorField.Value!).Invoke(ref args,
-                    (InterceptionMetadata)metadataField.Value!, Invoke);
+                ((IInterceptor) interceptorField.Value!).Invoke(
+                    ref args,
+                    (InterceptionMetadata) metadataField.Value!,
+                    Invoke );
             }
             finally
             {
                 // Copy back parameters.
-                foreach (var parameter in writableParameters)
+                foreach ( var parameter in writableParameters )
                 {
                     parameter.Value =
-                        TupleHelper.GetTupleItemExpression(argsExpression, parameter.Index);
+                        TupleHelper.GetTupleItemExpression( argsExpression, parameter.Index );
                 }
             }
         }
 
         return;
 
-        ValueTuple Invoke(ref TArgs receivedArgs)
+        ValueTuple Invoke( ref TArgs receivedArgs )
         {
-            var receivedArgsExpression = ExpressionFactory.Parse("receivedArgs");
+            var receivedArgsExpression = ExpressionFactory.Parse( "receivedArgs" );
 
-            var arguments = method.Parameters.Select(p =>
-                TupleHelper.GetTupleItemExpression(receivedArgsExpression, p.Index));
+            var arguments = method.Parameters.Select(
+                p =>
+                    TupleHelper.GetTupleItemExpression( receivedArgsExpression, p.Index ) );
 
-            method.With(interceptedField).Invoke(arguments);
+            method.With( interceptedField ).Invoke( arguments );
 
             return default;
         }
@@ -204,101 +230,121 @@ public sealed class GenerateProxyAspect : CompilationAspect
 
     [Template]
     private TResult NonVoidMethodTemplate<[CompileTime] TArgs, [CompileTime] TResult>(
-        IMethod method, IField interceptedField, IField interceptorField, IField metadataField)
+        IMethod method,
+        IField interceptedField,
+        IField interceptorField,
+        IField metadataField )
         where TArgs : struct, ITuple
     {
         // Prepare the context.
-        var args = (TArgs)TupleHelper.CreateTupleExpression(method).Value!;
-        var argsExpression = ExpressionFactory.Capture(args);
+        var args = (TArgs) TupleHelper.CreateTupleExpression( method ).Value!;
+        var argsExpression = ExpressionFactory.Capture( args );
 
         // Get writable parameters.
-        var writableParameters = method.Parameters.Where(p =>
-            p.RefKind is RefKind.Out or RefKind.Ref).ToList();
+        var writableParameters = method.Parameters.Where(
+                p =>
+                    p.RefKind is RefKind.Out or RefKind.Ref )
+            .ToList();
 
         // Invoke the interceptor.
-        if (writableParameters.Count == 0)
+        if ( writableParameters.Count == 0 )
         {
             // We don't need a try...finally if we don't have to write back writable parameters.
-            return ((IInterceptor)interceptorField.Value!).Invoke(ref args,
-                (InterceptionMetadata)metadataField.Value!, Invoke);
+            return ((IInterceptor) interceptorField.Value!).Invoke(
+                ref args,
+                (InterceptionMetadata) metadataField.Value!,
+                Invoke );
         }
         else
         {
             try
             {
-                return ((IInterceptor)interceptorField.Value!).Invoke(ref args,
-                    (InterceptionMetadata)metadataField.Value!, Invoke);
+                return ((IInterceptor) interceptorField.Value!).Invoke(
+                    ref args,
+                    (InterceptionMetadata) metadataField.Value!,
+                    Invoke );
             }
             finally
             {
                 // Copy back parameters.
-                foreach (var parameter in writableParameters)
+                foreach ( var parameter in writableParameters )
                 {
                     parameter.Value =
-                        TupleHelper.GetTupleItemExpression(argsExpression, parameter.Index);
+                        TupleHelper.GetTupleItemExpression( argsExpression, parameter.Index );
                 }
             }
         }
 
-        TResult Invoke(ref TArgs receivedArgs)
+        TResult Invoke( ref TArgs receivedArgs )
         {
-            var receivedArgsExpression = ExpressionFactory.Parse("receivedArgs");
+            var receivedArgsExpression = ExpressionFactory.Parse( "receivedArgs" );
 
-            var arguments = method.Parameters.Select(p =>
-                TupleHelper.GetTupleItemExpression(receivedArgsExpression, p.Index));
+            var arguments = method.Parameters.Select(
+                p =>
+                    TupleHelper.GetTupleItemExpression( receivedArgsExpression, p.Index ) );
 
-            return method.With(interceptedField).Invoke(arguments)!;
+            return method.With( interceptedField ).Invoke( arguments )!;
         }
     }
 
     [Template]
     private async Task TaskMethodTemplate<[CompileTime] TArgs>(
-        IMethod method, IField interceptedField, IField interceptorField, IField metadataField)
+        IMethod method,
+        IField interceptedField,
+        IField interceptorField,
+        IField metadataField )
         where TArgs : struct, ITuple
     {
         // Prepare the context.
-        var args = (TArgs)TupleHelper.CreateTupleExpression(method).Value!;
-        var argsExpression = ExpressionFactory.Capture(args);
+        var args = (TArgs) TupleHelper.CreateTupleExpression( method ).Value!;
+        var argsExpression = ExpressionFactory.Capture( args );
 
         // Get writable parameters.
-        var writableParameters = method.Parameters.Where(p =>
-            p.RefKind is RefKind.Out or RefKind.Ref).ToList();
+        var writableParameters = method.Parameters.Where(
+                p =>
+                    p.RefKind is RefKind.Out or RefKind.Ref )
+            .ToList();
 
         // Invoke the interceptor.
-        if (writableParameters.Count == 0)
+        if ( writableParameters.Count == 0 )
         {
             // We don't need a try...finally if we don't have to write back writable parameters.
-            await ((IInterceptor)interceptorField.Value!).InvokeAsync(args,
-                (InterceptionMetadata)metadataField.Value!, InvokeAsync);
+            await ((IInterceptor) interceptorField.Value!).InvokeAsync(
+                args,
+                (InterceptionMetadata) metadataField.Value!,
+                InvokeAsync );
         }
         else
         {
             try
             {
-                await ((IInterceptor)interceptorField.Value!).InvokeAsync(args,
-                    (InterceptionMetadata)metadataField.Value!, InvokeAsync);
+                await ((IInterceptor) interceptorField.Value!).InvokeAsync(
+                    args,
+                    (InterceptionMetadata) metadataField.Value!,
+                    InvokeAsync );
             }
             finally
             {
                 // Copy back parameters.
-                foreach (var parameter in writableParameters)
+                foreach ( var parameter in writableParameters )
                 {
                     parameter.Value =
-                        TupleHelper.GetTupleItemExpression(argsExpression, parameter.Index);
+                        TupleHelper.GetTupleItemExpression( argsExpression, parameter.Index );
                 }
             }
         }
 
         return;
 
-        async Task<ValueTuple> InvokeAsync(TArgs receivedArgs)
+        async Task<ValueTuple> InvokeAsync( TArgs receivedArgs )
         {
-            var receivedArgsExpression = ExpressionFactory.Parse("receivedArgs");
+            var receivedArgsExpression = ExpressionFactory.Parse( "receivedArgs" );
 
-            var arguments = method.Parameters.Select(p =>
-                TupleHelper.GetTupleItemExpression(receivedArgsExpression, p.Index));
+            var arguments = method.Parameters.Select(
+                p =>
+                    TupleHelper.GetTupleItemExpression( receivedArgsExpression, p.Index ) );
 
-            await method.With(interceptedField).Invoke(arguments)!;
+            await method.With( interceptedField ).Invoke( arguments )!;
 
             return default;
         }
@@ -306,101 +352,121 @@ public sealed class GenerateProxyAspect : CompilationAspect
 
     [Template]
     private async Task<TResult> TaskOfTMethodTemplate<[CompileTime] TArgs, [CompileTime] TResult>(
-        IMethod method, IField interceptedField, IField interceptorField, IField metadataField)
+        IMethod method,
+        IField interceptedField,
+        IField interceptorField,
+        IField metadataField )
         where TArgs : struct, ITuple
     {
         // Prepare the context.
-        var args = (TArgs)TupleHelper.CreateTupleExpression(method).Value!;
-        var argsExpression = ExpressionFactory.Capture(args);
+        var args = (TArgs) TupleHelper.CreateTupleExpression( method ).Value!;
+        var argsExpression = ExpressionFactory.Capture( args );
 
         // Get writable parameters.
-        var writableParameters = method.Parameters.Where(p =>
-            p.RefKind is RefKind.Out or RefKind.Ref).ToList();
+        var writableParameters = method.Parameters.Where(
+                p =>
+                    p.RefKind is RefKind.Out or RefKind.Ref )
+            .ToList();
 
         // Invoke the interceptor.
-        if (writableParameters.Count == 0)
+        if ( writableParameters.Count == 0 )
         {
             // We don't need a try...finally if we don't have to write back writable parameters.
-            return await ((IInterceptor)interceptorField.Value!).InvokeAsync(args,
-                (InterceptionMetadata)metadataField.Value!, InvokeAsync);
+            return await ((IInterceptor) interceptorField.Value!).InvokeAsync(
+                args,
+                (InterceptionMetadata) metadataField.Value!,
+                InvokeAsync );
         }
         else
         {
             try
             {
-                return await ((IInterceptor)interceptorField.Value!).InvokeAsync(args,
-                    (InterceptionMetadata)metadataField.Value!, InvokeAsync);
+                return await ((IInterceptor) interceptorField.Value!).InvokeAsync(
+                    args,
+                    (InterceptionMetadata) metadataField.Value!,
+                    InvokeAsync );
             }
             finally
             {
                 // Copy back parameters.
-                foreach (var parameter in writableParameters)
+                foreach ( var parameter in writableParameters )
                 {
                     parameter.Value =
-                        TupleHelper.GetTupleItemExpression(argsExpression, parameter.Index);
+                        TupleHelper.GetTupleItemExpression( argsExpression, parameter.Index );
                 }
             }
         }
 
-        Task<TResult> InvokeAsync(TArgs receivedArgs)
+        Task<TResult> InvokeAsync( TArgs receivedArgs )
         {
-            var receivedArgsExpression = ExpressionFactory.Parse("receivedArgs");
+            var receivedArgsExpression = ExpressionFactory.Parse( "receivedArgs" );
 
-            var arguments = method.Parameters.Select(p =>
-                TupleHelper.GetTupleItemExpression(receivedArgsExpression, p.Index));
+            var arguments = method.Parameters.Select(
+                p =>
+                    TupleHelper.GetTupleItemExpression( receivedArgsExpression, p.Index ) );
 
-            return method.With(interceptedField).Invoke(arguments)!;
+            return method.With( interceptedField ).Invoke( arguments )!;
         }
     }
 
     [Template]
     private async ValueTask ValueTaskMethodTemplate<[CompileTime] TArgs>(
-        IMethod method, IField interceptedField, IField interceptorField, IField metadataField)
+        IMethod method,
+        IField interceptedField,
+        IField interceptorField,
+        IField metadataField )
         where TArgs : struct, ITuple
     {
         // Prepare the context.
-        var args = (TArgs)TupleHelper.CreateTupleExpression(method).Value!;
-        var argsExpression = ExpressionFactory.Capture(args);
+        var args = (TArgs) TupleHelper.CreateTupleExpression( method ).Value!;
+        var argsExpression = ExpressionFactory.Capture( args );
 
         // Get writable parameters.
-        var writableParameters = method.Parameters.Where(p =>
-            p.RefKind is RefKind.Out or RefKind.Ref).ToList();
+        var writableParameters = method.Parameters.Where(
+                p =>
+                    p.RefKind is RefKind.Out or RefKind.Ref )
+            .ToList();
 
         // Invoke the interceptor.
-        if (writableParameters.Count == 0)
+        if ( writableParameters.Count == 0 )
         {
             // We don't need a try...finally if we don't have to write back writable parameters.
-            await ((IInterceptor)interceptorField.Value!).InvokeAsync(args,
-                (InterceptionMetadata)metadataField.Value!, InvokeAsync);
+            await ((IInterceptor) interceptorField.Value!).InvokeAsync(
+                args,
+                (InterceptionMetadata) metadataField.Value!,
+                InvokeAsync );
         }
         else
         {
             try
             {
-                await ((IInterceptor)interceptorField.Value!).InvokeAsync(args,
-                    (InterceptionMetadata)metadataField.Value!, InvokeAsync);
+                await ((IInterceptor) interceptorField.Value!).InvokeAsync(
+                    args,
+                    (InterceptionMetadata) metadataField.Value!,
+                    InvokeAsync );
             }
             finally
             {
                 // Copy back parameters.
-                foreach (var parameter in writableParameters)
+                foreach ( var parameter in writableParameters )
                 {
                     parameter.Value =
-                        TupleHelper.GetTupleItemExpression(argsExpression, parameter.Index);
+                        TupleHelper.GetTupleItemExpression( argsExpression, parameter.Index );
                 }
             }
         }
 
         return;
 
-        async ValueTask<ValueTuple> InvokeAsync(TArgs receivedArgs)
+        async ValueTask<ValueTuple> InvokeAsync( TArgs receivedArgs )
         {
-            var receivedArgsExpression = ExpressionFactory.Parse("receivedArgs");
+            var receivedArgsExpression = ExpressionFactory.Parse( "receivedArgs" );
 
-            var arguments = method.Parameters.Select(p =>
-                TupleHelper.GetTupleItemExpression(receivedArgsExpression, p.Index));
+            var arguments = method.Parameters.Select(
+                p =>
+                    TupleHelper.GetTupleItemExpression( receivedArgsExpression, p.Index ) );
 
-            await method.With(interceptedField).Invoke(arguments)!;
+            await method.With( interceptedField ).Invoke( arguments )!;
 
             return default;
         }
@@ -408,68 +474,81 @@ public sealed class GenerateProxyAspect : CompilationAspect
 
     [Template]
     private async ValueTask<TResult> ValueTaskOfTMethodTemplate<[CompileTime] TArgs,
-        [CompileTime] TResult>(
-        IMethod method, IField interceptedField, IField interceptorField, IField metadataField)
+                                                                [CompileTime] TResult>(
+        IMethod method,
+        IField interceptedField,
+        IField interceptorField,
+        IField metadataField )
         where TArgs : struct, ITuple
     {
         // Prepare the context.
-        var args = (TArgs)TupleHelper.CreateTupleExpression(method).Value!;
-        var argsExpression = ExpressionFactory.Capture(args);
+        var args = (TArgs) TupleHelper.CreateTupleExpression( method ).Value!;
+        var argsExpression = ExpressionFactory.Capture( args );
 
         // Get writable parameters.
-        var writableParameters = method.Parameters.Where(p =>
-            p.RefKind is RefKind.Out or RefKind.Ref).ToList();
+        var writableParameters = method.Parameters.Where(
+                p =>
+                    p.RefKind is RefKind.Out or RefKind.Ref )
+            .ToList();
 
         // Invoke the interceptor.
-        if (writableParameters.Count == 0)
+        if ( writableParameters.Count == 0 )
         {
             // We don't need a try...finally if we don't have to write back writable parameters.
-            return await ((IInterceptor)interceptorField.Value!).InvokeAsync(args, (InterceptionMetadata) metadataField.Value!, InvokeAsync);
+            return await ((IInterceptor) interceptorField.Value!).InvokeAsync(
+                args,
+                (InterceptionMetadata) metadataField.Value!,
+                InvokeAsync );
         }
         else
         {
             try
             {
-                return await ((IInterceptor)interceptorField.Value!).InvokeAsync(args, (InterceptionMetadata) metadataField.Value!,  InvokeAsync);
+                return await ((IInterceptor) interceptorField.Value!).InvokeAsync(
+                    args,
+                    (InterceptionMetadata) metadataField.Value!,
+                    InvokeAsync );
             }
             finally
             {
                 // Copy back parameters.
-                foreach (var parameter in writableParameters)
+                foreach ( var parameter in writableParameters )
                 {
                     parameter.Value =
-                        TupleHelper.GetTupleItemExpression(argsExpression, parameter.Index);
+                        TupleHelper.GetTupleItemExpression( argsExpression, parameter.Index );
                 }
             }
         }
 
-        ValueTask<TResult> InvokeAsync(TArgs receivedArgs)
+        ValueTask<TResult> InvokeAsync( TArgs receivedArgs )
         {
-            var receivedArgsExpression = ExpressionFactory.Parse("receivedArgs");
+            var receivedArgsExpression = ExpressionFactory.Parse( "receivedArgs" );
 
-            var arguments = method.Parameters.Select(p =>
-                TupleHelper.GetTupleItemExpression(receivedArgsExpression, p.Index));
+            var arguments = method.Parameters.Select(
+                p =>
+                    TupleHelper.GetTupleItemExpression( receivedArgsExpression, p.Index ) );
 
-            return method.With(interceptedField).Invoke(arguments)!;
+            return method.With( interceptedField ).Invoke( arguments )!;
         }
     }
 
-
     [Template]
-    public void Constructor(IInterceptor interceptor, IField interceptedField,
-        IField interceptorField)
+    public void Constructor(
+        IInterceptor interceptor,
+        IField interceptedField,
+        IField interceptorField )
     {
         interceptorField.Value = interceptor;
         interceptedField.Value = meta.Target.Parameters["intercepted"].Value;
     }
 
     [Template]
-    private void StaticConstructor(List<InterceptionMetadataInfo> metadataList)
+    private void StaticConstructor( List<InterceptionMetadataInfo> metadataList )
     {
-        foreach (var item in metadataList)
+        foreach ( var item in metadataList )
         {
             item.MetadataField.Value =
-                new InterceptionMetadata(item.Method.ToMethodInfo(), item.ReturnsAwaitable);
+                new InterceptionMetadata( item.Method.ToMethodInfo(), item.ReturnsAwaitable );
         }
     }
 }

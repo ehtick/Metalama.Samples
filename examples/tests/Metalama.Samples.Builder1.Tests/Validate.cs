@@ -5,9 +5,11 @@ namespace Metalama.Samples.Builder1.Tests.Validate;
 [GenerateBuilder]
 public partial class Invoice
 {
-    [Required] public string Number { get; }
+    [Required]
+    public string Number { get; }
 
-    [Required] public string Caption { get; }
+    [Required]
+    public string Caption { get; }
 
     public decimal Amount { get; }
 
@@ -15,9 +17,9 @@ public partial class Invoice
 
     protected void Validate()
     {
-        if (this.Discount > this.Amount)
+        if ( this.Discount > this.Amount )
         {
-            throw new ValidationException("Discount must be smaller than or equal to Amount");
+            throw new ValidationException( "Discount must be smaller than or equal to Amount" );
         }
     }
 }

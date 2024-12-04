@@ -10,7 +10,9 @@ using Metalama.Framework.Eligibility;
 public class SingletonAttribute : TypeAspect
 {
     // [<snippet InstanceTemplate>]
-    [Template] public static object Instance { get; }
+    [Template]
+    public static object Instance { get; }
+
     // [<endsnippet InstanceTemplate>]
 
     // [<snippet PrivateConstructorDiagnostic>]
@@ -18,10 +20,11 @@ public class SingletonAttribute : TypeAspect
         _constructorHasToBePrivate = new(
             "SING01",
             Severity.Warning,
-            "The '{0}' constructor must be private because the class is [Singleton].");
+            "The '{0}' constructor must be private because the class is [Singleton]." );
+
     // [<endsnippet PrivateConstructorDiagnostic>]
 
-    public override void BuildAspect(IAspectBuilder<INamedType> builder)
+    public override void BuildAspect( IAspectBuilder<INamedType> builder )
     {
         // [<snippet IntroduceInstanceProperty>]
         // Introduce the property.
@@ -33,45 +36,49 @@ public class SingletonAttribute : TypeAspect
                 propertyBuilder.Type = builder.Target;
 
                 var initializer = new ExpressionBuilder();
-                initializer.AppendVerbatim("new ");
-                initializer.AppendTypeName(builder.Target);
-                initializer.AppendVerbatim("()");
+                initializer.AppendVerbatim( "new " );
+                initializer.AppendTypeName( builder.Target );
+                initializer.AppendVerbatim( "()" );
 
                 propertyBuilder.InitializerExpression = initializer.ToExpression();
-            });
+            } );
+
         // [<endsnippet IntroduceInstanceProperty>]
 
         // [<snippet PrivateConstructorReport>]
         // Verify constructors.
-        foreach (var constructor in builder.Target.Constructors)
+        foreach ( var constructor in builder.Target.Constructors )
         {
-            if (constructor.Accessibility != Accessibility.Private &&
-                !constructor.IsImplicitlyDeclared)
+            if ( constructor.Accessibility != Accessibility.Private &&
+                 !constructor.IsImplicitlyDeclared )
             {
                 builder.Diagnostics.Report(
-                    _constructorHasToBePrivate.WithArguments((constructor, builder.Target)),
-                    constructor);
+                    _constructorHasToBePrivate.WithArguments( (constructor, builder.Target) ),
+                    constructor );
             }
         }
+
         // [<endsnippet PrivateConstructorReport>]
 
         // [<snippet AddPrivateConstructor>]
         // If there is no explicit constructor, add one.
-        if (builder.Target.Constructors.All(c =>
-                c.IsImplicitlyDeclared))
+        if ( builder.Target.Constructors.All(
+                c =>
+                    c.IsImplicitlyDeclared ) )
         {
-            builder.IntroduceConstructor(nameof(this.ConstructorTemplate),
-                buildConstructor: c => c.Accessibility = Accessibility.Private);
+            builder.IntroduceConstructor(
+                nameof(this.ConstructorTemplate),
+                buildConstructor: c => c.Accessibility = Accessibility.Private );
         }
+
         // [<endsnippet AddPrivateConstructor>]
     }
 
     [Template]
-    private void ConstructorTemplate()
-    {
-    }
+    private void ConstructorTemplate() { }
 
-    public override void BuildEligibility(IEligibilityBuilder<INamedType> builder) =>
-        builder.MustSatisfy(t => t.TypeKind is TypeKind.Class,
-            t => $"{t} must be a class");
+    public override void BuildEligibility( IEligibilityBuilder<INamedType> builder )
+        => builder.MustSatisfy(
+            t => t.TypeKind is TypeKind.Class,
+            t => $"{t} must be a class" );
 }

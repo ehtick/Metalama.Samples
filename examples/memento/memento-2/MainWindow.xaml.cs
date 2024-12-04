@@ -1,6 +1,6 @@
 ﻿public partial class MainWindow
 {
-    public MainWindow(MainViewModel mainViewModel)
+    public MainWindow( MainViewModel mainViewModel )
     {
         this.InitializeComponent();
 

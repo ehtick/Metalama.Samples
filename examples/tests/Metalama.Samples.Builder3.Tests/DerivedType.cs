@@ -7,9 +7,11 @@ namespace Metalama.Samples.Builder3.Tests.DerivedType;
 [GenerateBuilder]
 public class Article
 {
-    [Required] public string Url { get; }
+    [Required]
+    public string Url { get; }
 
-    [Required] public string Name { get; }
+    [Required]
+    public string Name { get; }
 }
 
 public class WebArticle : Article

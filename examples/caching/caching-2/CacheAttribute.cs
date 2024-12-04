@@ -6,7 +6,8 @@ using Metalama.Framework.Eligibility;
 
 public class CacheAttribute : OverrideMethodAspect
 {
-    [IntroduceDependency] private readonly ICache _cache;
+    [IntroduceDependency]
+    private readonly ICache _cache;
 
     public override dynamic? OverrideMethod()
     {
@@ -14,7 +15,7 @@ public class CacheAttribute : OverrideMethodAspect
         var cacheKey = CacheKeyBuilder.GetCachingKey().ToValue();
 
         // Cache lookup.
-        if (this._cache.TryGetValue(cacheKey, out object value))
+        if ( this._cache.TryGetValue( cacheKey, out object value ) )
         {
             // Cache hit.
             return value;
@@ -24,17 +25,19 @@ public class CacheAttribute : OverrideMethodAspect
         var result = meta.Proceed();
 
         // Add to cache.
-        this._cache.TryAdd(cacheKey, result);
+        this._cache.TryAdd( cacheKey, result );
 
         return result;
     }
 
-    public override void BuildEligibility(IEligibilityBuilder<IMethod> builder)
+    public override void BuildEligibility( IEligibilityBuilder<IMethod> builder )
     {
-        builder.MustSatisfy(m => !m.ReturnType.Equals(SpecialType.Void),
-            m => $"{m} cannot be void");
         builder.MustSatisfy(
-            m => !m.Parameters.Any(p => p.RefKind is RefKind.Out or RefKind.Ref),
-            m => $"{m} cannot have out or ref parameter");
+            m => !m.ReturnType.Equals( SpecialType.Void ),
+            m => $"{m} cannot be void" );
+
+        builder.MustSatisfy(
+            m => !m.Parameters.Any( p => p.RefKind is RefKind.Out or RefKind.Ref ),
+            m => $"{m} cannot have out or ref parameter" );
     }
 }

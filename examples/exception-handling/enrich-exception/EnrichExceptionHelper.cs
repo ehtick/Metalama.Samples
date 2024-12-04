@@ -3,18 +3,18 @@ using System.Text;
 
 public static class EnrichExceptionHelper
 {
-    private const string SlotName = "Context";
+    private const string _slotName = "Context";
 
     [ExcludeAspect(typeof(EnrichExceptionAttribute))]
     public static void AppendContextFrame(this Exception e, string frame)
     {
         // Get or create a StringBuilder for the exception where we will add additional context data.
-        var stringBuilder = (StringBuilder?)e.Data[SlotName];
+        var stringBuilder = (StringBuilder?)e.Data[_slotName];
 
         if (stringBuilder == null)
         {
             stringBuilder = new StringBuilder();
-            e.Data[SlotName] = stringBuilder;
+            e.Data[_slotName] = stringBuilder;
         }
 
         // Add current context information to the string builder.
@@ -23,5 +23,5 @@ public static class EnrichExceptionHelper
     }
 
     public static string? GetContextInfo(this Exception e)
-        => ((StringBuilder?)e.Data[SlotName])?.ToString();
+        => ((StringBuilder?)e.Data[_slotName])?.ToString();
 }

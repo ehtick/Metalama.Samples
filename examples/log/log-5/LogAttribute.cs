@@ -7,12 +7,12 @@ using Microsoft.Extensions.Logging;
 
 public class LogAttribute : MethodAspect
 {
-    private static readonly DiagnosticDefinition<INamedType> MissingLoggerFieldError =
+    private static readonly DiagnosticDefinition<INamedType> _missingLoggerFieldError =
         new("LOG01", Severity.Error,
             "The type '{0}' must have a field 'ILogger _logger' or a property 'ILogger Logger'.");
 
     private static readonly DiagnosticDefinition<( DeclarationKind, IFieldOrProperty)>
-        LoggerFieldOrIncorrectTypeError =
+        _loggerFieldOrIncorrectTypeError =
             new("LOG02", Severity.Error, "The {0} '{1}' must be of type ILogger.");
 
     public override void BuildAspect(IAspectBuilder<IMethod> builder)
@@ -27,7 +27,7 @@ public class LogAttribute : MethodAspect
         // Report an error if the field or property does not exist.
         if (loggerFieldOrProperty == null)
         {
-            builder.Diagnostics.Report(MissingLoggerFieldError.WithArguments(declaringType));
+            builder.Diagnostics.Report(_missingLoggerFieldError.WithArguments(declaringType));
 
             return;
         }
@@ -36,7 +36,7 @@ public class LogAttribute : MethodAspect
         if (!loggerFieldOrProperty.Type.IsConvertibleTo(typeof(ILogger)))
         {
             builder.Diagnostics.Report(
-                LoggerFieldOrIncorrectTypeError.WithArguments((declaringType.DeclarationKind,
+                _loggerFieldOrIncorrectTypeError.WithArguments((declaringType.DeclarationKind,
                     loggerFieldOrProperty)));
 
             return;

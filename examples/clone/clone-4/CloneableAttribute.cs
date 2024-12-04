@@ -9,25 +9,25 @@ using Metalama.Framework.Project;
 public class CloneableAttribute : TypeAspect
 {
     private static readonly DiagnosticDefinition<(DeclarationKind, IFieldOrProperty)>
-        FieldOrPropertyCannotBeReadOnly =
+        _fieldOrPropertyCannotBeReadOnly =
             new("CLONE01", Severity.Error,
                 "The {0} '{1}' cannot be read-only because it is marked as a [Child].");
 
     private static readonly DiagnosticDefinition<(DeclarationKind, IFieldOrProperty, IType)>
-        MissingCloneMethod =
+        _missingCloneMethod =
             new("CLONE02", Severity.Error,
                 "The {0} '{1}' cannot be a [Child] because its type '{2}' does not have a 'Clone' parameterless method.");
 
-    private static readonly DiagnosticDefinition<IMethod> CloneMethodMustBePublic =
+    private static readonly DiagnosticDefinition<IMethod> _cloneMethodMustBePublic =
         new("CLONE03", Severity.Error,
             "The '{0}' method must be public or internal.");
 
-    private static readonly DiagnosticDefinition<IProperty> ChildPropertyMustBeAutomatic =
+    private static readonly DiagnosticDefinition<IProperty> _childPropertyMustBeAutomatic =
         new("CLONE04", Severity.Error,
             "The property '{0}' cannot be a [Child] because is not an automatic property.");
 
     private static readonly DiagnosticDefinition<(DeclarationKind, IFieldOrProperty)>
-        AnnotateFieldOrProperty =
+        _annotateFieldOrProperty =
             new("CLONE05", Severity.Warning, "Mark the {0} '{1}' as a [Child] or [Reference].");
 
 
@@ -84,7 +84,7 @@ public class CloneableAttribute : TypeAspect
         // [<snippet ReportUnannotatedProperties>]
         foreach (var fieldOrProperty in eligibleChildren)
         {
-            builder.Diagnostics.Report(AnnotateFieldOrProperty
+            builder.Diagnostics.Report(_annotateFieldOrProperty
                 .WithArguments((fieldOrProperty.DeclarationKind, fieldOrProperty)).WithCodeFixes(
                     CodeFixFactory.AddAttribute(fieldOrProperty, typeof(ChildAttribute),
                         "Cloneable | Mark as child"),
@@ -118,7 +118,7 @@ public class CloneableAttribute : TypeAspect
             if (fieldOrProperty.Writeability != Writeability.All)
             {
                 builder.Diagnostics.Report(
-                    FieldOrPropertyCannotBeReadOnly.WithArguments((
+                    _fieldOrPropertyCannotBeReadOnly.WithArguments((
                         fieldOrProperty.DeclarationKind,
                         fieldOrProperty)), fieldOrProperty);
                 success = false;
@@ -127,7 +127,7 @@ public class CloneableAttribute : TypeAspect
             // If it is a field, it must be an automatic property.
             if (fieldOrProperty is IProperty { IsAutoPropertyOrField: false } property)
             {
-                builder.Diagnostics.Report(ChildPropertyMustBeAutomatic.WithArguments(property),
+                builder.Diagnostics.Report(_childPropertyMustBeAutomatic.WithArguments(property),
                     property);
                 success = false;
             }
@@ -136,7 +136,7 @@ public class CloneableAttribute : TypeAspect
             void ReportMissingMethod()
             {
                 builder.Diagnostics.Report(
-                    MissingCloneMethod.WithArguments((fieldOrProperty.DeclarationKind,
+                    _missingCloneMethod.WithArguments((fieldOrProperty.DeclarationKind,
                         fieldOrProperty,
                         fieldOrProperty.Type)), fieldOrProperty);
             }
@@ -172,7 +172,7 @@ public class CloneableAttribute : TypeAspect
                 {
                     // If we have a Clone method, it must be public.
                     builder.Diagnostics.Report(
-                        CloneMethodMustBePublic.WithArguments(cloneMethod), fieldOrProperty);
+                        _cloneMethodMustBePublic.WithArguments(cloneMethod), fieldOrProperty);
                     success = false;
                 }
             }

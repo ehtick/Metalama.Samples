@@ -11,25 +11,25 @@ public static class CachingOptionsExtensions
 {
     private static readonly ConditionalWeakTable<CachingOptions,
             ImmutableDictionary<string, CacheBuilderRegistration>>
-        Cache = new();
+        _cache = new();
 
 
-    private static readonly DiagnosticDefinition<IType> Error = new("CACHE01", Severity.Error,
+    private static readonly DiagnosticDefinition<IType> _error = new("CACHE01", Severity.Error,
         "The type '{0}' cannot be a part of a cache key. Implement ICacheKey, use [CacheKeyMember] or register a cache key builder.");
 
     private static ImmutableDictionary<string, CacheBuilderRegistration> GetRegistrations(
         CachingOptions cachingOptions)
     {
-        lock (Cache)
+        lock (_cache)
         {
-            if (Cache.TryGetValue(cachingOptions, out var dictionary))
+            if (_cache.TryGetValue(cachingOptions, out var dictionary))
             {
                 return dictionary;
             }
 
             dictionary =
                 cachingOptions.Registrations.ToImmutableDictionary(x => x.KeyType, x => x);
-            Cache.Add(cachingOptions, dictionary);
+            _cache.Add(cachingOptions, dictionary);
             return dictionary;
         }
     }
@@ -75,7 +75,7 @@ public static class CachingOptionsExtensions
             return true;
         }
 
-        diagnosticSink.Report(Error.WithArguments(expression.Type), expression);
+        diagnosticSink.Report(_error.WithArguments(expression.Type), expression);
         return false;
     }
 

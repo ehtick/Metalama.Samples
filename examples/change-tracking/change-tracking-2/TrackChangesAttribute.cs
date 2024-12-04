@@ -6,12 +6,12 @@ using Metalama.Framework.Diagnostics;
 
 public class TrackChangesAttribute : TypeAspect
 {
-    private static readonly DiagnosticDefinition<INamedType> MustHaveOnChangeMethod = new(
+    private static readonly DiagnosticDefinition<INamedType> _mustHaveOnChangeMethod = new(
         "MY001",
         Severity.Error,
         $"The '{nameof(ISwitchableChangeTracking)}' interface is implemented manually on type '{{0}}', but the type does not have an '{nameof(OnChange)}()' method.");
 
-    private static readonly DiagnosticDefinition OnChangeMethodMustBeProtected = new(
+    private static readonly DiagnosticDefinition _onChangeMethodMustBeProtected = new(
         "MY002",
         Severity.Error,
         $"The '{nameof(OnChange)}()' method must be have the 'protected' accessibility.");
@@ -33,11 +33,11 @@ public class TrackChangesAttribute : TypeAspect
             if (onChangeMethod == null)
             {
                 builder.Diagnostics.Report(
-                    MustHaveOnChangeMethod.WithArguments(builder.Target));
+                    _mustHaveOnChangeMethod.WithArguments(builder.Target));
             }
             else if (onChangeMethod.Accessibility != Accessibility.Protected)
             {
-                builder.Diagnostics.Report(OnChangeMethodMustBeProtected);
+                builder.Diagnostics.Report(_onChangeMethodMustBeProtected);
             }
         }
         // [<endsnippet BuildAspect>]

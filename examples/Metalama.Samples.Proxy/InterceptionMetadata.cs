@@ -4,10 +4,16 @@ using Metalama.Framework.Code;
 
 namespace Metalama.Samples.Proxy;
 
-public sealed class InterceptionMetadata(MethodInfo method, bool returnsAwaitable)
+public sealed class InterceptionMetadata
 {
-    public MethodInfo Method { get; } = method;
-    public bool ReturnsAwaitable { get; } = returnsAwaitable;
+    public MethodInfo Method { get; }
+    public bool ReturnsAwaitable { get; }
+
+    public InterceptionMetadata(MethodInfo method, bool returnsAwaitable)
+    {
+        this.Method = method;
+        this.ReturnsAwaitable = returnsAwaitable;
+    }
 }
 
 [CompileTime]

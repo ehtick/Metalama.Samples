@@ -6,7 +6,8 @@ using Metalama.Framework.Diagnostics;
 internal static class DiagnosticDefinitions
 {
     public static readonly DiagnosticDefinition<INamedType> NotAnEnumError =
-        new("ENUM01",
+        new(
+            "ENUM01",
             Severity.Error,
-            "The type '{0}' is not an enum.");
+            "The type '{0}' is not an enum." );
 }

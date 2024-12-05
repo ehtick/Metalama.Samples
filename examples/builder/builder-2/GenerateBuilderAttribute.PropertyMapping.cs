@@ -8,7 +8,7 @@ public partial class GenerateBuilderAttribute
     [CompileTime]
     private class PropertyMapping
     {
-        public PropertyMapping(IProperty sourceProperty, bool isRequired, bool isInherited)
+        public PropertyMapping( IProperty sourceProperty, bool isRequired, bool isInherited )
         {
             this.SourceProperty = sourceProperty;
             this.IsRequired = isRequired;
@@ -18,6 +18,7 @@ public partial class GenerateBuilderAttribute
         public IProperty SourceProperty { get; }
 
         public bool IsRequired { get; }
+
         public bool IsInherited { get; }
 
         public IProperty? BuilderProperty { get; set; }

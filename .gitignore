@@ -10,3 +10,4 @@ artifacts/
 eng/tools
 *.log
 *.binlog
+/.config/dotnet-tools.json

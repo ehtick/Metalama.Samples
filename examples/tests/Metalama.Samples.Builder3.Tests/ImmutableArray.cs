@@ -1,5 +1,4 @@
-﻿using Metalama.Samples.Builder3;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 
 namespace Metalama.Samples.Builder3.Tests.SimpleExample._ImmutableArray;
 

@@ -1,9 +1,7 @@
 ﻿namespace Metalama.Samples.Clone.Tests.MissingOnChangeMethod;
 
 [TrackChanges]
-public class DerivedClass : BaseClass
-{
-}
+public class DerivedClass : BaseClass { }
 
 public class BaseClass : ISwitchableChangeTracking
 {
@@ -13,7 +11,7 @@ public class BaseClass : ISwitchableChangeTracking
 
     public void AcceptChanges()
     {
-        if (this.IsTrackingChanges)
+        if ( this.IsTrackingChanges )
         {
             this.IsChanged = false;
         }

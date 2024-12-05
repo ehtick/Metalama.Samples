@@ -8,7 +8,8 @@ using Microsoft.Extensions.Logging;
 
 public class RetryAttribute : OverrideMethodAspect
 {
-    [IntroduceDependency] private readonly ILogger _logger;
+    [IntroduceDependency]
+    private readonly ILogger _logger;
 
     [IntroduceDependency]
     private readonly IResiliencePipelineFactory _resiliencePipelineFactory;
@@ -44,6 +45,7 @@ public class RetryAttribute : OverrideMethodAspect
 
             var pipeline = this._resiliencePipelineFactory.GetPipeline( this.Kind );
             pipeline.Execute( ExecuteVoid );
+
             return null; // Dummy
         }
         else
@@ -66,6 +68,7 @@ public class RetryAttribute : OverrideMethodAspect
             }
 
             var pipeline = this._resiliencePipelineFactory.GetPipeline( this.Kind );
+
             return pipeline.Execute( ExecuteCore );
         }
     }
@@ -73,30 +76,32 @@ public class RetryAttribute : OverrideMethodAspect
     // Template for async methods.
     public override async Task<dynamic?> OverrideAsyncMethod()
     {
-        async Task<object?> ExecuteCoreAsync(CancellationToken cancellationToken)
+        async Task<object?> ExecuteCoreAsync( CancellationToken cancellationToken )
         {
             try
             {
                 return await meta.ProceedAsync();
             }
-            catch (Exception e)
+            catch ( Exception e )
             {
-                var messageBuilder = LoggingHelper.BuildInterpolatedString(false);
-                messageBuilder.AddText(" has failed: ");
-                messageBuilder.AddExpression(e.Message);
-                this._logger.LogWarning((string)messageBuilder.ToValue());
+                var messageBuilder = LoggingHelper.BuildInterpolatedString( false );
+                messageBuilder.AddText( " has failed: " );
+                messageBuilder.AddExpression( e.Message );
+                this._logger.LogWarning( (string) messageBuilder.ToValue() );
 
                 throw;
             }
         }
 
         var cancellationTokenParameter
-            = meta.Target.Parameters.LastOrDefault( p => p.Type.Is( typeof( CancellationToken ) ) );
+            = meta.Target.Parameters.LastOrDefault( p => p.Type.Equals( typeof(CancellationToken) ) );
 
         var pipeline = this._resiliencePipelineFactory.GetPipeline( this.Kind );
-        return await pipeline.ExecuteAsync( async token => await ExecuteCoreAsync( token ),
+
+        return await pipeline.ExecuteAsync(
+            async token => await ExecuteCoreAsync( token ),
             cancellationTokenParameter != null
-                ? (CancellationToken)cancellationTokenParameter.Value!
-                : CancellationToken.None);
+                ? (CancellationToken) cancellationTokenParameter.Value!
+                : CancellationToken.None );
     }
 }

@@ -60,7 +60,7 @@ public static class CachingOptionsExtensions
         // Check registered types.
         var registrations = GetRegistrations(cachingOptions);
 
-        var typeId = expression.Type.ToNonNullableType()
+        var typeId = expression.Type.ToNonNullable()
             .ToDisplayString(CodeDisplayFormat.FullyQualified);
         if (registrations.ContainsKey(typeId))
         {
@@ -85,7 +85,7 @@ public static class CachingOptionsExtensions
         [NotNullWhen(true)] out IExpression? cacheKeyExpression)
     {
         var expressionBuilder = new ExpressionBuilder();
-        var typeId = expression.Type.ToNonNullableType()
+        var typeId = expression.Type.ToNonNullable()
             .ToDisplayString(CodeDisplayFormat.FullyQualified);
 
         if (GetRegistrations(cachingOptions)

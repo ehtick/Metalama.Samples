@@ -1,4 +1,3 @@
-using Metalama.Samples.Builder1;
 using System.ComponentModel.DataAnnotations;
 namespace Metalama.Samples.Builder1.Tests.SimpleExample;
 [GenerateBuilder]

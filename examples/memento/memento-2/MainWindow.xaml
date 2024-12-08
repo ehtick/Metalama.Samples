@@ -6,7 +6,7 @@
         xmlns:global="clr-namespace:"
         mc:Ignorable="d"
         Title="My Little Fish Tank" Height="450" Width="800"
-        x:Name="window">
+        x:Name="Window">
     <Window.Resources>
         <global:NotValueConverter x:Key="NotConverter" />
         <global:SpeciesConverter x:Key="SpeciesConverter" />
@@ -16,37 +16,37 @@
     </Window.InputBindings>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="24"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="24"/>
+            <RowDefinition Height="24" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="24" />
         </Grid.RowDefinitions>
-        <ListView Name="list" 
-                  Grid.Column="0" 
-                  Grid.Row="1" 
-                  ItemsSource="{Binding Items}" 
-                  SelectedItem="{Binding CurrentItem, Mode=TwoWay}" 
-                  SelectionMode="Single" 
+        <ListView Name="List"
+                  Grid.Column="0"
+                  Grid.Row="1"
+                  ItemsSource="{Binding Items}"
+                  SelectedItem="{Binding CurrentItem, Mode=TwoWay}"
+                  SelectionMode="Single"
                   IsEnabled="{Binding IsEditing, Converter={StaticResource NotConverter}, UpdateSourceTrigger=PropertyChanged}">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Species, Converter={StaticResource SpeciesConverter}}" />
-                        <TextBlock Text="{Binding Name}"/>
+                        <TextBlock Text="{Binding Name}" />
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <global:FishControl Grid.Column="1" Grid.Row="1" 
-                           DataContext="{Binding CurrentItem}"
-                           IsEnabled="{Binding ElementName=window, Path=DataContext.IsEditing, UpdateSourceTrigger=PropertyChanged}" />
+        <global:FishControl Grid.Column="1" Grid.Row="1"
+                            DataContext="{Binding CurrentItem}"
+                            IsEnabled="{Binding ElementName=Window, Path=DataContext.IsEditing, UpdateSourceTrigger=PropertyChanged}" />
         <Grid Grid.Row="2" Grid.Column="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Button Content="New Fish" Grid.Column="0" Command="{Binding NewCommand}" />
             <Button Content="Remove Fish" Grid.Column="1" Command="{Binding RemoveCommand}" />

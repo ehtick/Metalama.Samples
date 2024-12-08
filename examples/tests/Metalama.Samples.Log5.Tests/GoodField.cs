@@ -7,13 +7,11 @@ internal class Foo
 {
     private readonly ILogger _logger;
 
-    public Foo(ILogger logger)
+    public Foo( ILogger logger )
     {
         this._logger = logger;
     }
 
     [Log]
-    public void Method()
-    {
-    }
+    public void Method() { }
 }

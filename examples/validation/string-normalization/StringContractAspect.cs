@@ -7,10 +7,10 @@ namespace Metalama.Samples.NormalizeStrings;
 public abstract class StringContractAspect : ContractAspect
 {
     public override void BuildEligibility(IEligibilityBuilder<IFieldOrPropertyOrIndexer> builder)
-        => builder.Type().MustEqual(typeof(string));
+        => builder.Type().MustEqual(SpecialType.String);
 
     public override void BuildEligibility(IEligibilityBuilder<IParameter> builder)
-        => builder.Type().MustEqual(typeof(string));
+        => builder.Type().MustEqual(SpecialType.String);
 
     [CompileTime]
     protected static bool IsAppliedToNullableString()

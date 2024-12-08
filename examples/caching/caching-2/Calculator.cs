@@ -3,10 +3,11 @@
     public int InvocationCounts { get; private set; }
 
     [Cache]
-    public int Add(int a, int b)
+    public int Add( int a, int b )
     {
-        Console.WriteLine("Thinking...");
+        Console.WriteLine( "Thinking..." );
         this.InvocationCounts++;
+
         return a + b;
     }
 }

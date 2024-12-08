@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 
-
 public interface ISwitchableChangeTracking : IChangeTracking
 {
     /// <summary>

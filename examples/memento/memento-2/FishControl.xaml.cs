@@ -1,9 +1,4 @@
-﻿using System.Windows.Controls;
-
-/// <summary>
-/// Interaction logic for ItemControl.xaml
-/// </summary>
-public partial class FishControl : UserControl
+﻿public partial class FishControl
 {
     public FishControl()
     {

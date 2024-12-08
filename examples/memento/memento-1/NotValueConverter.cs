@@ -1,11 +1,15 @@
-﻿using System.Windows.Data;
+﻿using System.Globalization;
+using System.Windows.Data;
 
 internal class NotValueConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter,
-        System.Globalization.CultureInfo culture)
+    public object Convert(
+        object? value,
+        Type targetType,
+        object? parameter,
+        CultureInfo culture )
     {
-        if (value is bool b)
+        if ( value is bool b )
         {
             return !b;
         }
@@ -13,10 +17,13 @@ internal class NotValueConverter : IValueConverter
         return false;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter,
-        System.Globalization.CultureInfo culture)
+    public object ConvertBack(
+        object? value,
+        Type targetType,
+        object? parameter,
+        CultureInfo culture )
     {
-        if (value is bool b)
+        if ( value is bool b )
         {
             return !b;
         }

@@ -35,7 +35,6 @@ public class CacheAttribute : OverrideMethodAspect
         builder.MustSatisfy(
             m => !m.ReturnType.Equals( SpecialType.Void ),
             m => $"{m} cannot be void" );
-
         builder.MustSatisfy(
             m => !m.Parameters.Any( p => p.RefKind is RefKind.Out or RefKind.Ref ),
             m => $"{m} cannot have out or ref parameter" );

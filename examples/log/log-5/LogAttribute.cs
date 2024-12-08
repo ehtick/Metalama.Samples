@@ -88,7 +88,7 @@ public class LogAttribute : MethodAspect
                 // Display the success message. The message is different when the method is void.
                 var successMessage = BuildInterpolatedString( true );
 
-                if ( meta.Target.Method.ReturnType.Equals( typeof(void) ) )
+                if (meta.Target.Method.ReturnType.Equals(SpecialType.Void))
                 {
                     // When the method is void, display a constant text.
                     successMessage.AddText( " succeeded." );

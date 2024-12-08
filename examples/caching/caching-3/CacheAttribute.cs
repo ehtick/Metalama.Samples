@@ -4,8 +4,6 @@ using Metalama.Framework.Code;
 using Metalama.Framework.Code.SyntaxBuilders;
 using Metalama.Framework.Eligibility;
 
-#pragma warning disable CS8618
-
 public class CacheAttribute : OverrideMethodAspect
 {
     // The ICache service is pulled from the dependency injection container. 

@@ -69,9 +69,8 @@ public sealed class MementoAttribute : TypeAspect
             }
 
             baseMementoConstructor = baseMementoType.Constructors
-                .FirstOrDefault(
-                    c => c.Parameters.Count == 1 &&
-                         c.Parameters[0].Type.Equals( baseTypeDefinition ) );
+                .FirstOrDefault(c => c.Parameters.Count == 1 &&
+                                     c.Parameters[0].Type.IsConvertibleTo(baseTypeDefinition));
 
             if ( baseMementoConstructor == null )
             {

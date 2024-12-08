@@ -1,11 +1,14 @@
 using System.Diagnostics;
 using Metalama.Samples.Metrics;
-[assembly: GenerateAddMetricsExtensionAttribute]
+#pragma warning disable CA2201
+[assembly: GenerateAddMetricsExtension]
 namespace Metalama.Samples.Metrics.Example;
 public class HatShop
 {
   private int _executionCount;
-  [MeasureExecutionCount, MeasureExecutionTime, MeasureExceptionCount]
+  [MeasureExecutionCount]
+  [MeasureExecutionTime]
+  [MeasureExceptionCount]
   public void PlaceOrder()
   {
     var timestamp = Stopwatch.GetTimestamp();

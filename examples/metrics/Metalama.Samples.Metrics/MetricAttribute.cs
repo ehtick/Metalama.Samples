@@ -11,10 +11,10 @@ public abstract class MetricAttribute : MethodAspect
     }
 
     [Template]
-    internal abstract dynamic? OverrideMethodTemplate( IField metricsField, IProperty metricProperty );
+    internal abstract dynamic? OverrideMethodTemplate( IField metricsField, IFieldOrProperty metricProperty );
 
     [Template]
-    internal virtual void CreateMetricTemplate(IExpression meter, IProperty metricProperty, [CompileTime] string metricName)
+    internal virtual void CreateMetricTemplate(IExpression meter, IFieldOrProperty metricProperty, [CompileTime] string metricName)
     {
         // Must be overridden.
     }

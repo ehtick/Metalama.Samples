@@ -8,7 +8,7 @@ namespace Metalama.Samples.Metrics;
 
 public class MeasureExecutionTimeAttribute : MetricAttribute
 {
-    internal override dynamic? OverrideMethodTemplate(IField metricsField, IProperty metricProperty)
+    internal override dynamic? OverrideMethodTemplate(IField metricsField, IFieldOrProperty metricProperty)
     {
         var meterExpression = metricProperty.With( metricsField, InvokerOptions.NullConditional);
 
@@ -24,7 +24,7 @@ public class MeasureExecutionTimeAttribute : MetricAttribute
         }
     }
 
-    internal override void CreateMetricTemplate(IExpression meter, IProperty metricProperty, [CompileTime] string metricName)
+    internal override void CreateMetricTemplate(IExpression meter, IFieldOrProperty metricProperty, [CompileTime] string metricName)
     {
         metricProperty.Value = ((Meter)meter.Value!).CreateCounter<long>(metricName);
     }

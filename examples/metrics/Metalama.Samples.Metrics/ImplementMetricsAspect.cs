@@ -9,69 +9,86 @@ namespace Metalama.Samples.Metrics;
 
 internal class ImplementMetricsAspect : TypeAspect
 {
-    [IntroduceDependency] private readonly IMeterFactory _meterFactory;
-    [IntroduceDependency] private readonly IMetricHost _metricHost;
-
     public override void BuildAspect(IAspectBuilder<INamedType> builder)
     {
         base.BuildAspect(builder);
 
-        // Create the Metrics nested type.
-        var metricsType = builder.IntroduceClass("Metrics", whenExists: OverrideStrategy.New);
+        // Create the Metrics type.
+        var metricsType = builder
+            .With( builder.Target.Compilation )
+            .WithNamespace("Metrics")
+            .IntroduceClass( builder.Target.Name + "Metrics", whenExists: OverrideStrategy.New, buildType: t => t.Accessibility = Accessibility.Public );
 
+        metricsType.IntroduceConstructor(nameof(MetricsConstructorTemplate));
+
+
+        // Pull dependencies into the metric type.
+        var meterFactoryField = metricsType.IntroduceDependency(typeof(IMeterFactory)).Declaration;
+        var meterHostField = metricsType.IntroduceDependency(typeof(IMetricHost)).Declaration;
+        
         // Introduce a dependency to the Metrics type into the target type.
-        if (!builder.TryIntroduceDependency(
-                new DependencyProperties(builder.Target, metricsType.Declaration, // TODO 2025.0: make nullable.
-                    "metrics"), out var metricsField))
-        {
-            builder.SkipAspect();
-            return;
-        }
+        var metricsField = builder.IntroduceDependency(
+            metricsType.Declaration.ToNullable(),
+            new DependencyOptions() { IsRequired = false }).Declaration;
+
 
         // Iterate metrics and simultaneously build the Metrics type and override the instrumented methods.
         var metrics = new List<MetricMetadata>();
-        foreach (var predecessor in builder.AspectInstance.Predecessors)
-        {
-            var precedingAspectInstance = (IAspectInstance) predecessor.Instance;
-            var precedingAspect = (MetricAttribute)precedingAspectInstance.Aspect;
+        var predecessors = builder.AspectInstance.Predecessors
+                .Select(p => (IAspectInstance)p.Instance)
+                .Select(i => (Aspect: (MetricAttribute)i.Aspect, TargetMethod: (IMethod)i.TargetDeclaration.GetTarget()))
+                .OrderBy(x => x.TargetMethod)
+                .ThenBy(x => x.Aspect.MetricKind); // TODO: It would be better to order by aspect execution order instead of alphabetical name, but we don't have access to this data.
 
-            var targetMethod =                (IMethod)precedingAspectInstance.TargetDeclaration.GetTarget();
-            var fieldName = targetMethod.Name + precedingAspect.MetricKind;
-            var metricName = targetMethod.Name + "." + precedingAspect.MetricKind;
+        foreach (var predecessor in predecessors )
+        {
+            
+            var fieldName = predecessor.TargetMethod.Name + predecessor.Aspect.MetricKind;
+            var metricName = predecessor.TargetMethod.Name + "." + predecessor.Aspect.MetricKind;
 
             // Introduce a field to store the metric.
             var metricProperty = metricsType
-                .IntroduceAutomaticProperty(fieldName, precedingAspect.MetricType, IntroductionScope.Instance)
+                .IntroduceField(fieldName, predecessor.Aspect.MetricType, IntroductionScope.Instance, buildField: p =>
+                {
+                    p.Accessibility = Accessibility.Internal;
+                    p.Writeability = Writeability.ConstructorOnly;
+                })
                 .Declaration;
 
-            
+
             // Override the method.
-            builder.With(targetMethod).WithTemplateProvider(precedingAspect)
-                .Override(nameof(precedingAspect.OverrideMethodTemplate), args: new { metricsField, metricProperty });
+            builder.With(predecessor.TargetMethod).WithTemplateProvider(predecessor.Aspect)
+                .Override(nameof(predecessor.Aspect.OverrideMethodTemplate), args: new { metricsField, metricProperty });
 
             // Remember the field metadata to advice the constructor.
-            metrics.Add(new MetricMetadata(targetMethod, precedingAspect, metricProperty, metricName,
+            metrics.Add(new MetricMetadata(predecessor.TargetMethod, predecessor.Aspect, metricProperty, metricName,
                 metrics.Count));
         }
 
-        metricsType.AddInitializer(nameof(this.CreateMetrics),
-            InitializerKind.BeforeInstanceConstructor, args: new { metrics });
-        
-        builder.Outbound.Select(x=>x.Compilation).RequireAspect<ImplementAddMetricsAspect>();
+
+        metricsType.AddInitializer(nameof(this.InitializeMetrics), InitializerKind.BeforeInstanceConstructor,
+            args: new { metrics, meterFactoryField, meterHostField });
+
+
+
+        builder.With(builder.Target.Compilation).AddAnnotation(new MetricTypeAnnotation(metricsType.Declaration.ToRef()));
     }
 
     [Template]
-    private void CreateMetrics(List<MetricMetadata> metrics)
+    public void MetricsConstructorTemplate() { }
+
+    [Template]
+    private void InitializeMetrics(List<MetricMetadata> metrics, IField meterFactoryField, IField meterHostField)
     {
-        var meter = this._meterFactory.Create(this._metricHost.ApplicationName,
-            this._metricHost.ApplicationVersion, this._metricHost.Tags);
+        var meter = ((IMeterFactory)meterFactoryField.Value!).Create(((IMetricHost)meterHostField.Value!).ApplicationName,
+            ((IMetricHost)meterHostField.Value!).ApplicationVersion, ((IMetricHost)meterHostField.Value!).Tags);
 
         foreach (var metric in metrics)
         {
             metric.Aspect.CreateMetricTemplate(ExpressionFactory.Capture(meter), metric.MetricProperty,
                 metric.MetricName);
 
-            this._metricHost.RegisterInstrument(metric.MetricProperty.Value,
+            ((IMetricHost)meterHostField.Value).RegisterInstrument(metric.MetricProperty.Value,
                 metric.Method.ToMethodInfo(), metric.Aspect.MetricKind);
         }
     }

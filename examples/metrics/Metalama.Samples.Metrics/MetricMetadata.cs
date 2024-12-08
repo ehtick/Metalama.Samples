@@ -8,12 +8,12 @@ internal class MetricMetadata
 {
     public IMethod Method { get; }
     public MetricAttribute Aspect { get; }
-    public IProperty MetricProperty { get; }
+    public IFieldOrProperty MetricProperty { get; }
 
     public string MetricName { get; }
     public int Order { get; }
 
-    public MetricMetadata(IMethod method, MetricAttribute aspect, IProperty metricProperty,
+    public MetricMetadata(IMethod method, MetricAttribute aspect, IFieldOrProperty metricProperty,
         string metricName, int order)
     {
         this.Method = method;

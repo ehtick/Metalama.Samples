@@ -1,15 +1,20 @@
-﻿namespace Metalama.Samples.Metrics.Example;
+﻿
+using Metalama.Samples.Metrics;
+
+[assembly: GenerateAddMetricsExtensionAttribute]
+
+namespace Metalama.Samples.Metrics.Example;
 
 public class HatShop
 {
     private int _executionCount;
     
-    [MeasureExecutionCount]
+    [MeasureExecutionCount, MeasureExecutionTime, MeasureExceptionCount]
     public void PlaceOrder()
     {
-        _executionCount++;
+        this._executionCount++;
 
-        if (_executionCount % 10 == 0)
+        if (this._executionCount % 10 == 0)
         {
             throw new Exception();
         }

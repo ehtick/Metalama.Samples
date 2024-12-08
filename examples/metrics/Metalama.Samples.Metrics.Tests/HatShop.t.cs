@@ -11,7 +11,7 @@ public class HatShop
     var timestamp = Stopwatch.GetTimestamp();
     try
     {
-      (hatShopMetrics?.PlaceOrderExecutionCount).Add(1);
+      (_hatShopMetrics?.PlaceOrderExecutionCount).Add(1);
       try
       {
     this._executionCount++;
@@ -26,19 +26,19 @@ public class HatShop
       }
       catch
       {
-        (hatShopMetrics?.PlaceOrderExceptionCount).Add(1);
+        (_hatShopMetrics?.PlaceOrderExceptionCount).Add(1);
         throw;
       }
       return;
     }
     finally
     {
-      (hatShopMetrics?.PlaceOrderExecutionTime).Add(Stopwatch.GetTimestamp() - timestamp);
+      (_hatShopMetrics?.PlaceOrderExecutionTime).Add(Stopwatch.GetTimestamp() - timestamp);
     }
   }
-  private HatShopMetrics hatShopMetrics;
+  private HatShopMetrics _hatShopMetrics;
   public HatShop(HatShopMetrics hatShopMetrics = null)
   {
-    this.hatShopMetrics = hatShopMetrics;
+    this._hatShopMetrics = hatShopMetrics;
   }
 }

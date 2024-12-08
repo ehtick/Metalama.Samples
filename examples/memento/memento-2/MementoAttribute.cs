@@ -21,7 +21,7 @@ public sealed class MementoAttribute : TypeAspect
     public override void BuildAspect(IAspectBuilder<INamedType> builder)
     {
         // [<snippet GetBaseType>]
-        var isBaseMementotable = builder.Target.BaseType?.Is(typeof(IMementoable)) == true;
+        var isBaseMementotable = builder.Target.BaseType?.IsConvertibleTo(typeof(IMementoable)) == true;
 
         INamedType? baseMementoType;
         IConstructor? baseMementoConstructor;
@@ -61,7 +61,7 @@ public sealed class MementoAttribute : TypeAspect
 
             baseMementoConstructor = baseMementoType.Constructors
                 .FirstOrDefault(c => c.Parameters.Count == 1 &&
-                                     c.Parameters[0].Type.Is(baseTypeDefinition));
+                                     c.Parameters[0].Type.IsConvertibleTo(baseTypeDefinition));
 
             if (baseMementoConstructor == null)
             {

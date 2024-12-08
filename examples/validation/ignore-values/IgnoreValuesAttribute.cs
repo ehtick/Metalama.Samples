@@ -41,6 +41,6 @@ internal class IgnoreValuesAttribute : OverrideFieldOrPropertyAspect
             };
 
         builder.Type().MustSatisfyAny(supportedTypes.Select(supportedType =>
-            new Action<IEligibilityBuilder<IType>>(t => t.MustBe(supportedType))).ToArray());
+            new Action<IEligibilityBuilder<IType>>(t => t.MustBeConvertibleTo(supportedType))).ToArray());
     }
 }

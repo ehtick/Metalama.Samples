@@ -118,7 +118,7 @@ public static class CachingOptionsExtensions
                 }
             }
         }
-        else if (expression.Type.Is(typeof(ICacheKey)) ||
+        else if (expression.Type.IsConvertibleTo(typeof(ICacheKey)) ||
                  (expression.Type is INamedType namedType &&
                   namedType.Enhancements().HasAspect<GenerateCacheKeyAspect>()))
         {

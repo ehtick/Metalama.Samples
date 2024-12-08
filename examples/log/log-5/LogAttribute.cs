@@ -33,7 +33,7 @@ public class LogAttribute : MethodAspect
         }
 
         // Verify the type of the logger field or property.
-        if (!loggerFieldOrProperty.Type.Is(typeof(ILogger)))
+        if (!loggerFieldOrProperty.Type.IsConvertibleTo(typeof(ILogger)))
         {
             builder.Diagnostics.Report(
                 _loggerFieldOrIncorrectTypeError.WithArguments((declaringType.DeclarationKind,
@@ -83,7 +83,7 @@ public class LogAttribute : MethodAspect
                 // Display the success message. The message is different when the method is void.
                 var successMessage = BuildInterpolatedString(true);
 
-                if (meta.Target.Method.ReturnType.Is(typeof(void)))
+                if (meta.Target.Method.ReturnType.Equals(SpecialType.Void))
                 {
                     // When the method is void, display a constant text.
                     successMessage.AddText(" succeeded.");

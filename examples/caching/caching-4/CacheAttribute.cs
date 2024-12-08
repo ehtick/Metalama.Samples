@@ -106,7 +106,7 @@ public class CacheAttribute : OverrideMethodAspect
     {
         // Do not allow or offer the aspect to be used on void methods or methods with out/ref parameters.
 
-        builder.MustSatisfy(m => !m.ReturnType.Is(SpecialType.Void),
+        builder.MustSatisfy(m => !m.ReturnType.Equals(SpecialType.Void),
             m => $"{m} cannot be void");
 
         builder.MustSatisfy(

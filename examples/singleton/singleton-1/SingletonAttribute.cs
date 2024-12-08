@@ -5,8 +5,6 @@ using Metalama.Framework.Code.SyntaxBuilders;
 using Metalama.Framework.Diagnostics;
 using Metalama.Framework.Eligibility;
 
-#pragma warning disable CS8618
-
 public class SingletonAttribute : TypeAspect
 {
     // [<snippet InstanceTemplate>]

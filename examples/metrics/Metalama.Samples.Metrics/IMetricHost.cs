@@ -5,11 +5,11 @@ namespace Metalama.Samples.Metrics;
 
 public interface IMetricHost
 {
-     string ApplicationName { get; }
-     string? ApplicationVersion { get; }
-     
-     IEnumerable<KeyValuePair<string,object?>> Tags { get; }
+    string ApplicationName { get; }
 
-     void RegisterInstrument(Instrument instrument, MethodInfo method, string metricKind);
+    string? ApplicationVersion { get; }
 
+    IEnumerable<KeyValuePair<string, object?>> Tags { get; }
+
+    void RegisterInstrument( Instrument instrument, MethodInfo method, string metricKind );
 }

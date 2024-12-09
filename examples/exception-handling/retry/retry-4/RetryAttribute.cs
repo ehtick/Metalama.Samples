@@ -3,7 +3,6 @@ using Metalama.Framework.Aspects;
 using Metalama.Framework.Code.SyntaxBuilders;
 using Microsoft.Extensions.Logging;
 
-
 public class RetryAttribute : OverrideMethodAspect
 {
     [IntroduceDependency]

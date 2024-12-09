@@ -8,9 +8,9 @@ namespace Metalama.Samples.Metrics;
 
 public class MeasureExecutionTimeAttribute : MetricAttribute
 {
-    internal override dynamic? OverrideMethodTemplate(IField metricsField, IFieldOrProperty metricProperty)
+    internal override dynamic? OverrideMethodTemplate( IField metricsField, IFieldOrProperty metricProperty )
     {
-        var meterExpression = metricProperty.With( metricsField, InvokerOptions.NullConditional);
+        var meterExpression = metricProperty.With( metricsField, InvokerOptions.NullConditional );
 
         var timestamp = Stopwatch.GetTimestamp();
 
@@ -20,15 +20,19 @@ public class MeasureExecutionTimeAttribute : MetricAttribute
         }
         finally
         {
-            ((Counter<long>) meterExpression.Value!).Add(Stopwatch.GetTimestamp() - timestamp );    
+            ((Counter<long>) meterExpression.Value!).Add( Stopwatch.GetTimestamp() - timestamp );
         }
     }
 
-    internal override void CreateMetricTemplate(IExpression meter, IFieldOrProperty metricProperty, [CompileTime] string metricName)
+    internal override void CreateMetricTemplate(
+        IExpression meter,
+        IFieldOrProperty metricProperty,
+        [CompileTime] string metricName )
     {
-        metricProperty.Value = ((Meter)meter.Value!).CreateCounter<long>(metricName);
+        metricProperty.Value = ((Meter) meter.Value!).CreateCounter<long>( metricName );
     }
 
     internal override string MetricKind => "ExecutionTime";
+
     internal override Type MetricType => typeof(Counter<long>);
 }

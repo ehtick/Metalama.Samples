@@ -5,16 +5,19 @@ namespace Metalama.Samples.Metrics;
 
 public abstract class MetricAttribute : MethodAspect
 {
-    public override void BuildAspect(IAspectBuilder<IMethod> builder)
+    public override void BuildAspect( IAspectBuilder<IMethod> builder )
     {
-        builder.Outbound.Select( m => m.DeclaringType).RequireAspect<ImplementMetricsAspect>();
+        builder.Outbound.Select( m => m.DeclaringType ).RequireAspect<ImplementMetricsAspect>();
     }
 
     [Template]
     internal abstract dynamic? OverrideMethodTemplate( IField metricsField, IFieldOrProperty metricProperty );
 
     [Template]
-    internal virtual void CreateMetricTemplate(IExpression meter, IFieldOrProperty metricProperty, [CompileTime] string metricName)
+    internal virtual void CreateMetricTemplate(
+        IExpression meter,
+        IFieldOrProperty metricProperty,
+        [CompileTime] string metricName )
     {
         // Must be overridden.
     }

@@ -7,7 +7,7 @@ namespace Metalama.Samples.Metrics;
 
 public class MeasureExceptionCountAttribute : MetricAttribute
 {
-    internal override dynamic? OverrideMethodTemplate(IField metricsField, IFieldOrProperty metricProperty)
+    internal override dynamic? OverrideMethodTemplate( IField metricsField, IFieldOrProperty metricProperty )
     {
         var meterExpression = metricProperty.With( metricsField, InvokerOptions.NullConditional );
 
@@ -17,17 +17,21 @@ public class MeasureExceptionCountAttribute : MetricAttribute
         }
         catch
         {
-            ((Counter<long>)meterExpression.Value!).Add(1);
+            ((Counter<long>) meterExpression.Value!).Add( 1 );
 
             throw;
         }
     }
 
-    internal override void CreateMetricTemplate(IExpression meter, IFieldOrProperty metricProperty, [CompileTime] string metricName)
+    internal override void CreateMetricTemplate(
+        IExpression meter,
+        IFieldOrProperty metricProperty,
+        [CompileTime] string metricName )
     {
-        metricProperty.Value = ((Meter)meter.Value!).CreateCounter<long>(metricName);
+        metricProperty.Value = ((Meter) meter.Value!).CreateCounter<long>( metricName );
     }
 
     internal override string MetricKind => "ExceptionCount";
+
     internal override Type MetricType => typeof(Counter<long>);
 }

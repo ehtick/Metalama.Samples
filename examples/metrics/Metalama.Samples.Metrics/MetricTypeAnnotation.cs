@@ -6,8 +6,8 @@ internal class MetricTypeAnnotation : IAnnotation<ICompilation>
 {
     public IRef<INamedType> MetricType { get; }
 
-    public MetricTypeAnnotation(IRef<INamedType> metricType)
+    public MetricTypeAnnotation( IRef<INamedType> metricType )
     {
-        this.MetricType=metricType;
+        this.MetricType = metricType;
     }
 }

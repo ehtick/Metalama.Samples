@@ -32,6 +32,7 @@
         "**/*.txt",
         "**/*.md"
     ],
-    "dotnet.defaultSolution": "disable"
+    "dotnet.defaultSolution": "disable",
+    "window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}${separator}[Branch: develop/2025.0]"
     }
     

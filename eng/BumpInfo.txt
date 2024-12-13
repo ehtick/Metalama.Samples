@@ -1,1 +1,0 @@
-{"Dependencies":{"Metalama.Patterns":"2025.0.0","Metalama":"2025.0.8"}}

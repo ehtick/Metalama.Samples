@@ -1,5 +1,7 @@
-﻿using Metalama.Framework.Aspects;
+﻿using Metalama.Extensions.CodeFixes;
+using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
+using Metalama.Framework.Fabrics;
 
 namespace Metalama.Samples.Proxy;
 
@@ -7,11 +9,11 @@ namespace Metalama.Samples.Proxy;
 public static class FabricExtensions
 {
     public static void GenerateStaticProxy(
-        this IAspectReceiver<INamedType> receiver,
+        this IQuery<INamedType> receiver,
         Func<INamedType, string>? getProxyTypeName,
         Func<INamedType, string>? getProxyNamespace = null )
     {
-        receiver.Tag( type => type )
+        receiver.WithTag( type => type )
             .Select( type => type.Compilation )
             .AddAspect<GenerateProxyAspect>(
                 ( _, type ) => new GenerateProxyAspect(
@@ -21,11 +23,11 @@ public static class FabricExtensions
     }
 
     public static void GenerateStaticProxy(
-        this IAspectReceiver<INamedType> receiver,
+        this IQuery<INamedType> receiver,
         string? proxyTypeName = null,
         string? proxyNamespace = null )
     {
-        receiver.Tag( type => type )
+        receiver.WithTag( type => type )
             .Select( type => type.Compilation )
             .AddAspect<GenerateProxyAspect>(
                 ( _, type ) => new GenerateProxyAspect(

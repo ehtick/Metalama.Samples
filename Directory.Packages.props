@@ -9,10 +9,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.1.0" />
-    <PackageVersion Include="Metalama.Extensions.Architecture" Version="$(MetalamaExtensionsVersion)" />
-    <PackageVersion Include="Metalama.Extensions.DependencyInjection" Version="$(MetalamaExtensionsVersion)" />
-    <PackageVersion Include="Metalama.Patterns.Observability" Version="$(MetalamaPatternsVersion)" />
-    <PackageVersion Include="Metalama.Patterns.Wpf" Version="$(MetalamaPatternsVersion)" />
+    <PackageVersion Include="Metalama.Extensions.Architecture" Version="$(MetalamaPremiumVersion)" />
+    <PackageVersion Include="Metalama.Extensions.CodeFixes" Version="$(MetalamaPremiumVersion)" />
+    <PackageVersion Include="Metalama.Extensions.DependencyInjection" Version="$(MetalamaVersion)" />
+    <PackageVersion Include="Metalama.Patterns.Observability" Version="$(MetalamaVersion)" />
+    <PackageVersion Include="Metalama.Patterns.Wpf" Version="$(MetalamaVersion)" />
     <PackageVersion Include="Metalama.Framework" Version="$(MetalamaVersion)" />
     <PackageVersion Include="Metalama.Framework.Sdk" Version="$(MetalamaVersion)" />
     <PackageVersion Include="Metalama.Testing.AspectTesting" Version="$(MetalamaVersion)" />

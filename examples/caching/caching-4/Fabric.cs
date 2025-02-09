@@ -1,4 +1,5 @@
 ﻿using Metalama.Framework.Fabrics;
+using Metalama.Framework.Options;
 
 public class Fabric : ProjectFabric
 {

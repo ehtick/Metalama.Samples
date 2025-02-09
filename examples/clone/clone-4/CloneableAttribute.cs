@@ -1,6 +1,6 @@
-﻿using Metalama.Framework.Aspects;
+﻿using Metalama.Extensions.CodeFixes;
+using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
-using Metalama.Framework.CodeFixes;
 using Metalama.Framework.Diagnostics;
 using Metalama.Framework.Project;
 

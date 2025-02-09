@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -7,7 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Metalama.Framework"/>
+        <PackageReference Include="Metalama.Framework" />
+        <PackageReference Include="Metalama.Extensions.CodeFixes" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\clone-3\Metalama.Samples.Clone3.csproj" />
     </ItemGroup>
 
 </Project>

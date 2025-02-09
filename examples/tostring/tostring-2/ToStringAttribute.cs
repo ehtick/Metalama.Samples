@@ -1,7 +1,7 @@
-﻿using Metalama.Framework.Aspects;
+﻿using Metalama.Extensions.CodeFixes;
+using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using Metalama.Framework.Code.SyntaxBuilders;
-using Metalama.Framework.CodeFixes;
 
 [EditorExperience( SuggestAsLiveTemplate = true )]
 public class ToStringAttribute : TypeAspect

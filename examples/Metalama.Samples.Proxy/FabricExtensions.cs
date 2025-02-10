@@ -15,7 +15,7 @@ public static class FabricExtensions
     {
         receiver.WithTag( type => type )
             .Select( type => type.Compilation )
-            .AddAspect<GenerateProxyAspect>(
+            .AddAspect(
                 ( _, type ) => new GenerateProxyAspect(
                     type,
                     getProxyTypeName?.Invoke( type ) ?? type.Name.Substring( 1 ) + "Proxy",
@@ -29,7 +29,7 @@ public static class FabricExtensions
     {
         receiver.WithTag( type => type )
             .Select( type => type.Compilation )
-            .AddAspect<GenerateProxyAspect>(
+            .AddAspect(
                 ( _, type ) => new GenerateProxyAspect(
                     type,
                     proxyTypeName ?? type.Name.Substring( 1 ) + "Proxy",

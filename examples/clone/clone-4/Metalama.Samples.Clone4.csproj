@@ -11,8 +11,4 @@
         <PackageReference Include="Metalama.Extensions.CodeFixes" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\clone-3\Metalama.Samples.Clone3.csproj" />
-    </ItemGroup>
-
 </Project>

@@ -20,6 +20,8 @@
         <NoWarn>LAMA0048;CA1050;LAMA0066</NoWarn>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>False</IsPackable>
+
+        <!-- HTML files are consumed by Metalama.Documentation. -->
         <MetalamaWriteHtml>True</MetalamaWriteHtml>
 
         <!-- The latest version supported by Metalama Compiler may be higher that the latest version supported by Metalama Framework. -->

@@ -1,7 +1,7 @@
 ﻿using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using Metalama.Framework.Diagnostics;
-using Metalama.Framework.Validation;
+using Metalama.Extensions.Validation;
 
 public class SingletonAttribute : TypeAspect
 {

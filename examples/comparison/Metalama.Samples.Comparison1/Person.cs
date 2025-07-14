@@ -1,6 +1,6 @@
 ﻿namespace Metalama.Samples.Comparison1;
 
-[Comparison]
+[GenerateEqualityComparison]
 partial class Person
 {
     public string Name { get; init; }

@@ -62,25 +62,25 @@ Then, we detect unannotated properties of a cloneable type. And report the warni
 
 [!metalama-file CloneableAttribute.cs marker="ReportUnannotatedProperties"]
 
-Notice that we used the <xref:Metalama.Framework.Diagnostics.IDiagnostic.WithCodeFixes*> method to attach code fixes to
+Notice that we used the <xref:Metalama.Extensions.CodeFixes.CodeFixExtensions.WithCodeFixes*> method to attach code fixes to
 the diagnostics. To create the code fixes, we use
-the <xref:Metalama.Framework.CodeFixes.CodeFixFactory.AddAttribute*?text=CodeFixFactory.AddAttribute> method.
-The <xref:Metalama.Framework.CodeFixes.CodeFixFactory> class contains other methods to create simple code fixes.
+the <xref:Metalama.Extensions.CodeFixes.CodeFixFactory.AddAttribute*?text=CodeFixFactory.AddAttribute> method.
+The <xref:Metalama.Extensions.CodeFixes.CodeFixFactory> class contains other methods to create simple code fixes.
 
 ### Suggesting CloneMembers
 
 When we detect that a cloneable type does not already have a `CloneMembers` method, we suggest adding it without
-reporting a warning using the <xref:Metalama.Framework.Diagnostics.ScopedDiagnosticSink.Suggest*> method:
+reporting a warning using the <xref:Metalama.Extensions.CodeFixes.CodeFixExtensions.Suggest*> method:
 
 [!metalama-file CloneableAttribute.cs marker="SuggestCloneMembers"]
 
-Unlike adding attributes, there is no ready-made code fix from the <xref:Metalama.Framework.CodeFixes.CodeFixFactory>
+Unlike adding attributes, there is no ready-made code fix from the <xref:Metalama.Extensions.CodeFixes.CodeFixFactory>
 class to implement this method. We must implement the code transformation ourselves and provide an instance of
-the <xref:Metalama.Framework.CodeFixes.CodeFix> class. This object comprises just two elements: the title of the code
+the <xref:Metalama.Extensions.CodeFixes.CodeFix> class. This object comprises just two elements: the title of the code
 fix and a delegate performing the code transformation thanks to
-an <xref:Metalama.Framework.CodeFixes.ICodeActionBuilder>. The list of transformations that are directly available from
-the <xref:Metalama.Framework.CodeFixes.ICodeActionBuilder> is limited, but we can get enormous power using
-the <xref:Metalama.Framework.CodeFixes.ICodeActionBuilder.ApplyAspectAsync*> method, which can apply any aspect to any
+an <xref:Metalama.Extensions.CodeFixes.ICodeActionBuilder>. The list of transformations that are directly available from
+the <xref:Metalama.Extensions.CodeFixes.ICodeActionBuilder> is limited, but we can get enormous power using
+the <xref:Metalama.Extensions.CodeFixes.ICodeActionBuilder.ApplyAspectAsync*> method, which can apply any aspect to any
 declaration.
 
 To implement the code fix, we create the ad-hoc aspect class `AddEmptyCloneMembersAspect`, whose implementation should
@@ -97,8 +97,8 @@ interface.
 We implemented coding guidance into our `Cloneable` aspect so that our users do not have to look at the design
 documentation so often and to prevent them from making frequent mistakes. We used two new techniques: attaching code
 fixes to warnings using
-the <xref:Metalama.Framework.Diagnostics.IDiagnostic.WithCodeFixes*?text=IDiagnostic.WithCodeFixes> method and
-suggesting code fixes _without_ warning using the <xref:Metalama.Framework.Diagnostics.ScopedDiagnosticSink.Suggest*>
+the <xref:Metalama.Extensions.CodeFixes.CodeFixExtensions.WithCodeFixes*?text=IDiagnostic.WithCodeFixes> method and
+suggesting code fixes _without_ warning using the <xref:Metalama.Extensions.CodeFixes.CodeFixExtensions.Suggest*>
 method.
 
 > [!div class="see-also"]

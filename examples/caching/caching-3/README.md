@@ -61,7 +61,7 @@ The only action of the `CacheKeyMemberAttribute` aspect is then to provide the `
 [!metalama-file CacheKeyMemberAttribute.cs]
 
 The `BuildAspect` method of `CacheKeyMemberAttribute` calls
-the <xref:Metalama.Framework.Aspects.IAspectReceiver`1.RequireAspect*> method for the declaring type. This method adds
+the <xref:Metalama.Framework.Aspects.AspectQueryExtensions.RequireAspect*> method for the declaring type. This method adds
 an instance of the `GenerateCacheKeyAspect` if none has been added yet, so that if a class has several properties marked
 with `[CacheKeyMember]`, a single instance of the `GenerateCacheKeyAspect` aspect will be added.
 

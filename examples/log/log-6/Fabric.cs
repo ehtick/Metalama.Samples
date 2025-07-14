@@ -7,10 +7,9 @@ internal class Fabric : ProjectFabric
     public override void AmendProject( IProjectAmender amender )
         => amender
             .SelectTypes()
-            .Where( type => type.Accessibility == Accessibility.Public )
+            .Where( type => type.Accessibility == Accessibility.Public && type.TypeKind != TypeKind.Interface )
             .SelectMany( type => type.Methods )
-            .Where(
-                method =>
-                    method.Accessibility == Accessibility.Public && method.Name != "ToString" )
+            .Where( method =>
+                        method.Accessibility == Accessibility.Public && method.Name != "ToString" )
             .AddAspectIfEligible<LogAttribute>();
 }

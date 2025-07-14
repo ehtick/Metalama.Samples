@@ -3,6 +3,13 @@
     <PropertyGroup>
         <RepoDirectory>$(MSBuildThisFileDirectory)</RepoDirectory>
         <RepoKind>GitHub</RepoKind>
+
+
+        <!-- Evaluation license key restricted to the Metalama.Samples namespace. -->
+        <MetalamaLicense>112792-QQXG8QQQSTAEQ2WEV4LLX7HRSQWMYBGVA28ZNNSRVJYZNNAVR4JX3SQSCZ7VM3WDWRT5VL4G9Z7DPCWRE94MM2YRV2CFKS657VAFMGE3C9NKMRCGN8AXWLZV4QQXGQYZATP4Q8USJG4X6P2</MetalamaLicense>
+
+        <!-- Intentionally removing any ambiant license key to make sure that we can build without one. -->
+        <MetalamaIgnoreMetalamaIgnoreUserLicenses>True</MetalamaIgnoreMetalamaIgnoreUserLicenses>
     </PropertyGroup>
 
     <Import Project="eng\Versions.props"/>
@@ -13,6 +20,8 @@
         <NoWarn>LAMA0048;CA1050;LAMA0066</NoWarn>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>False</IsPackable>
+
+        <!-- HTML files are consumed by Metalama.Documentation. -->
         <MetalamaWriteHtml>True</MetalamaWriteHtml>
 
         <!-- The latest version supported by Metalama Compiler may be higher that the latest version supported by Metalama Framework. -->

@@ -9,8 +9,6 @@
   <component name="ChangeListManager">
     <list default="true" id="87b1f048-8528-4471-a6ee-d2b972dc32b6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Metalama.Samples.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Metalama.Samples.dir/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ComparisonAttribute.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Person.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Person.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +33,10 @@
     "accountId": "006976dd-5752-4e89-ac89-dd9a9f32f1df"
   }
 }]]></component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$USER_HOME$/AppData/Local/Temp/Metalama/CompileTime/Metalama.Samples.Comparison2/.netcoreapp8.0/227ea50a5c5410ab/2025.1.10.438-dev-debug/GenerateEqu_e9a7d630.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/cb94114a32b7498baad6f989577e10e52f2a00/be/c4ef1b37/CommonCompiler.cs" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo"><![CDATA[{
   "associatedIndex": 6
@@ -92,7 +94,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1752487816549</updated>
-      <workItem from="1752487817675" duration="2548000" />
+      <workItem from="1752487817675" duration="4324000" />
     </task>
     <task id="LOCAL-00001" summary="Working on ComparisonAttribute: commit reproducing a bug.">
       <option name="closed" value="true" />

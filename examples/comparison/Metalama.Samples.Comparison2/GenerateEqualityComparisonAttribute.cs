@@ -3,7 +3,6 @@ using Metalama.Framework.Advising;
 using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using Metalama.Framework.Code.Invokers;
-using System.Diagnostics;
 
 namespace Metalama.Samples.Comparison2;
 
@@ -14,8 +13,8 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
     {
         base.BuildAspect( builder );
 
+        // Identify the field and automatic properties that will be part of the comparison.
         var targetType = builder.Target;
-        builder.ImplementInterface( ((INamedType) TypeFactory.GetType( typeof( IEquatable<> ) )).WithTypeArguments( targetType ) );
 
         var fields = targetType.FieldsAndProperties.Where( f =>
             f.IsAutoPropertyOrField == true && f is { IsStatic: false, IsImplicitlyDeclared: false } )
@@ -23,9 +22,8 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
             .ToList();
 
         // Find the base Equals method.
-        Debugger.Break();
         var ancestors = new List<INamedType>();
-        for ( var parent = builder.Target.BaseType; parent.SpecialType != SpecialType.Object; parent = parent.BaseType )
+        for ( var parent = builder.Target.BaseType; parent != null && parent.SpecialType != SpecialType.Object; parent = parent.BaseType )
         {
             ancestors.Add( parent );
         }
@@ -33,11 +31,13 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
         var baseEqualsMethod = targetType.AllMethods
             .OfName( "Equals" )
             .Where( m => m.Parameters.Count == 1 && m.Parameters[0].Type is INamedType )
-            .Select( m => (Method: m, Type: m.Parameters[0].Type, Level: ancestors.IndexOf( (INamedType) m.Parameters[0].Type )) )
+            .Select( m => (Method: m, m.Parameters[0].Type, Level: ancestors.IndexOf( (INamedType) m.Parameters[0].Type )) )
             .Where( m => m.Level >= 0 )
             .OrderBy( m => m.Level )
             .FirstOrDefault();
 
+        // Add the IEquatable interface to the type (interface members will be added lower).
+        builder.ImplementInterface( ((INamedType) TypeFactory.GetType( typeof( IEquatable<> ) )).WithTypeArguments( targetType ) );
 
 
         // Introduce the Equals methods.
@@ -65,7 +65,7 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
 
 
 
-    // Template for the Equals(T) method.
+    // Template for the top-level Equals(T) method.
     [Template( Name = "Equals" )]
     public virtual bool IntroducedTypedEquals<[CompileTime] TBase, [CompileTime] TDerived>( TDerived? other, IReadOnlyList<IFieldOrProperty> fields, IMethod? baseEqualsMethod )
         where TDerived : TBase
@@ -76,7 +76,7 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
         {
             meta.InsertComment( $"Invoking {baseEqualsMethod}" );
             
-            if ( !baseEqualsMethod.Invoke( other  ) )
+            if ( !baseEqualsMethod.With( InvokerOptions.Base ).Invoke( other  ) )
             {
                 return false;
             }
@@ -97,6 +97,7 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
         return true;
     }
 
+    // Templates for the new method hiding the base typed Equals method.
     [Template( Name = "Equals" )]
     public bool IntroducedBaseTypeEquals<[CompileTime] TBase, [CompileTime] TDerived>( TBase? other )
         => other is TDerived typed && meta.This.Equals( typed );
@@ -106,6 +107,7 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
     public bool IntroducedUntypedEquals<[CompileTime] T>( object? other )
         => other is T typed && meta.This.Equals( typed );
 
+    // Template for AddToHashCode.
     [Template]
     protected virtual void AddToHashCode( ref HashCode hashCode, IReadOnlyList<IFieldOrProperty> fields )
     {

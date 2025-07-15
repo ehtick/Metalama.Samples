@@ -11,13 +11,16 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
     {
         base.BuildAspect( builder );
 
+        // Identify the field and automatic properties that will be part of the comparison.
         var targetType = builder.Target;
-        builder.ImplementInterface( ((INamedType) TypeFactory.GetType( typeof( IEquatable<> ) )).WithTypeArguments( targetType ) );
-
         var fields = targetType.FieldsAndProperties.Where( f =>
             f.IsAutoPropertyOrField == true && f is { IsStatic: false, IsImplicitlyDeclared: false } )
             .OrderBy( f => f.Name )
             .ToList();
+
+        // Add the IEquatable interface to the type (members will be added lower).
+        builder.ImplementInterface( ((INamedType) TypeFactory.GetType( typeof( IEquatable<> ) )).WithTypeArguments( targetType ) );
+
 
         // Introduce the Equals methods.
         builder.IntroduceMethod( nameof( this.IntroducedTypedEquals ), args: new { T = targetType, fields } );

@@ -8,24 +8,26 @@ using Metalama.Samples.Comparison4;
     AspectOrder(
         AspectOrderDirection.CompileTime,
         typeof(EqualityMemberAttribute),
-        typeof(GenerateEqualityComparisonAttribute) )]
+        typeof(ImplementEquatableAttribute) )]
 
 namespace Metalama.Samples.Comparison4;
 
 public class EqualityMemberAttribute : FieldOrPropertyAspect
 {
-    public EqualityMemberAttribute( int order = 1000 ) 
+    protected const int DefaultOrder = 1000;
+
+    public EqualityMemberAttribute( int order = DefaultOrder )
     {
         this.Order = order;
     }
 
     public int Order { get; }
-    
+
     public override void BuildAspect( IAspectBuilder<IFieldOrProperty> builder )
     {
         base.BuildAspect( builder );
 
-        builder.With( builder.Target.DeclaringType ).RequireAspect<GenerateEqualityComparisonAttribute>();
+        builder.With( builder.Target.DeclaringType ).RequireAspect<ImplementEquatableAttribute>();
     }
 
     public override void BuildEligibility( IEligibilityBuilder<IFieldOrProperty> builder )
@@ -47,7 +49,7 @@ public class EqualityMemberAttribute : FieldOrPropertyAspect
     internal virtual int GetCost( IFieldOrProperty field )
     {
         // TODO: Base on benchmarks.
-        
+
         return field.Type.SpecialType switch
         {
             SpecialType.None => 10,
@@ -87,7 +89,6 @@ public class EqualityMemberAttribute : FieldOrPropertyAspect
         // However, the impact is limited to performance.
         bool HasEqualsAspect( INamedType type )
             => !type.DeclaringAssembly.IsExternal
-               && type.Enhancements().HasAspect<GenerateEqualityComparisonAttribute>();
+               && type.Enhancements().HasAspect<ImplementEquatableAttribute>();
     }
-    
 }

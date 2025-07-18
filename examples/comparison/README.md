@@ -1,55 +1,57 @@
 ---
 uid: sample-comparison
 ---
-# Implementing Equality Comparison Without Boilerplate
+# Implementing equality comparison without boilerplate
 
-As a .NET developer, you are likely well-acquainted with the `Equals` method in .NET, which is employed to ascertain if two instances are equivalent. In conjunction with `Equals`, there is the `GetHashCode()` method, which generates a hash code typically utilized for dictionary keys.
+As a .NET developer, you've probably come across the <xref:System.Object.Equals%2A> method in .NET. It's used to determine whether two instances are equivalent. Alongside this, there's <xref:System.Object.GetHashCode>, which generates a hash code often used for dictionary keys.
 
-## Default Implementation
+## Default implementation
 
-In .NET, the default implementation of equality comparison differs based on the type: `class`, `struct`, and `record` each adopt their own strategy.
+In .NET, the default approach to equality comparison varies depending on the type: `class`, `struct`, and `record` each have their own strategy.
 
-- **`class`**: Two class instances _never_ deemed equal by default. When you compare two `class` instances, only the _references_ are compared, which is equivalent to calling the `ReferenceEqual` method.
+- **`class`**: By default, two class instances are _never_ considered equal. When you compare two `class` instances, only the _references_ are compared, equivalent to calling the <xref:System.Object.ReferenceEquals%2A> method.
 
-- **`struct`**: The default .NET implementation evaluates the values of all fields and automatic properties, invoking the `Equals(object)` method for both `class` and `struct` fields. However, `GetHashCode()` is invoked for classes but not invariably for structs. This behavior can lead to inconsistencies between `Equals` and `GetHashCode` in the edge case where a struct `A` has a field of type `B`,  `B` is a `struct` with a custom equality implementation, and not all fields of `B` are identity members. 
+- **`struct`**: The default .NET implementation checks the values of all fields and automatic properties, using the <xref:System.Object.Equals(System.Object)> method for both `class` and `struct` fields. However, <xref:System.Object.GetHashCode> is invoked for classes but not always for structs. This can lead to inconsistencies between <xref:System.Object.Equals%2A> and <xref:System.Object.GetHashCode> in edge cases where a struct `A` has a field of type `B`, `B` is a `struct` with a custom equality implementation, and not all fields of `B` are identity members.
 
-- **`record`**: All fields and automatic properties, whether of `class` or `struct` types, are compared using `EqualityComparer<T>.Default`, where `T` is the field type. This implies that `record` types perform a deep comparison by default. The strongly-typed `Equals` method and the custom `GetHashCode` method are employed in both cases.
+- **`record`**: All fields and automatic properties, whether of `class` or `struct` types, are compared using <xref:System.Collections.Generic.EqualityComparer%601.Default>, where `T` is the field type. This means `record` types perform a deep comparison by default. The strongly-typed <xref:System.Object.Equals%2A> and custom <xref:System.Object.GetHashCode> methods are used in both cases.
 
-## Advantages of a Custom Implementation
+## Advantages of a custom implementation
 
-While the default .NET implementation is generally reasonable and suffices in most scenarios, there are cases where overriding it by implementing the `IEquatable<T>` interface is advantageous.
+While the default .NET implementation is generally reasonable and works in most scenarios, there are cases where implementing the <xref:System.IEquatable%601> interface can be beneficial.
 
-- **For `struct` types**:
-    - **Performance.** A substantial performance enhancement can be achieved by providing a custom equality implementation, often by two orders of magnitude. If you frequently compare custom structs, a custom equality implementation is essential.
-    - **Fixing edge cases.** As mentioned above, there is a slight chance you might be impacted with the edge case mentioned above.
-    - **Different string comparison** The default comparison mode for strings is `StringComparison.Ordinal`. If you need a different mode, you will need to supply a custom equality comparison implementation.
+### For `struct` types
 
-- **For `class` types**: 
-    - **Different equality behaviors.** Altering the default behavior of equality comparison might be desirable for some families of objects. For instance, if you have an `Entity` class with `EntityType` and `EntityId` fields, alongside other data fields, you might prefer the default comparison to take only these two fields into account, disregarding others. This implies that two distinct instances that share the same `EntityType` and `EntityId`, each with different data fields, would be considered equal.
+- **Performance**: You can achieve a significant performance boost with a custom equality implementation, often by two orders of magnitude. If you frequently compare custom structs, a custom implementation is essential.
+- **Fixing edge cases**: As mentioned earlier, there's a slight chance you might encounter the edge cases described above.
+- **Different string comparison**: The default comparison mode for strings is <xref:System.StringComparison.Ordinal>. If you need a different mode, like case-insensitive, you'll need to provide a custom equality comparison implementation.
 
-- **For `record` types**:
-    -  In general, overriding the default equality implementation should be approached with caution. Indeed, the identity contract is a fundamental feature of `record` types, unlike `class` types, and modifying this behavior contravene the principle of least surprise.
-    - **Ignoring irrelevant fields.** A legitimate scenario for overriding might be to disregard an irrelevant record field. For example, you might have an `ObjectId` field used exclusively for debugging, not stored or serialized over the network, and should not influence equality comparison. In such cases, overriding the equality implementation is justified.
-    - 
+### For `class` types
 
-## Why Not Manually Implement the Custom Implementation
+- **Different equality behaviors**: Sometimes, altering the default equality behavior is desirable for certain object families. For example, if you have an `Entity` class with `EntityType` and `EntityId` fields, along with other data fields, you might want the default comparison to consider only these two fields, ignoring others. This means two distinct instances with the same `EntityType` and `EntityId` but different data fields would be considered equal.
 
-Given that the default implementation can be suboptimal, you might contemplate manually implementing the `IEquatable` interface, including the operators.
+### For `record` types
 
-There are two issues with this approach:
+- In general, overriding the default equality implementation should be done cautiously. The identity contract is a core feature of `record` types, unlike `class` types, and modifying this behavior can contradict the principle of least surprise.
+- **Ignoring irrelevant fields**: A valid reason for overriding might be to ignore an irrelevant record field. For instance, you might have an `ObjectId` field used only for debugging, not stored or serialized over the network, and shouldn't affect equality comparison. In such cases, overriding the equality implementation is justified.
+- **Different string comparison**: As with structs, you'll need a custom equality contract if you want a different string comparison mode than <xref:System.StringComparison.Ordinal>.
 
-1. It is essentially repetitive, boilerplate code, and incurs time and financial costs.
-2. The implementation must remain synchronized with the list of fields and automatic properties of the class. If you add a field to a struct, it is easy to overlook updating both the `Equals` and `GetHashCode` methods. This is an unnecessary source of human errors.
+## Why not manually implement the custom implementation
 
-To circumvent repetitive work and minimize maintenance errors, it is far more advantageous to implement the equality contract automatically during compilation.
+Considering that the default implementation can be less than ideal, you might think about manually implementing the <xref:System.IEquatable%601> interface, including the operators.
+
+There are two problems with this approach:
+
+1. It's repetitive, boilerplate code that takes time and money.
+2. The implementation must stay synchronized with the list of fields and automatic properties of the class. If you add a field to a struct, it's easy to forget to update both the <xref:System.Object.Equals%2A> and <xref:System.Object.GetHashCode> methods. This is an unnecessary source of human errors.
+
+To avoid repetitive work and reduce maintenance errors, it's much better to implement the equality contract automatically during compilation.
 
 Two technologies can help you implement equality patterns:
 
-- raw Roslyn source generators are suitable because this pattern does not require to modify any hand-written members, only adding new ones. However, Roslyn source generates are low-level APIs and can require a lot of code.
-- Metalama aspects are easier to build.
-
+- Raw Roslyn source generators are suitable because this pattern doesn't require modifying any hand-written members, only adding new ones. However, Roslyn source generators are low-level APIs and can require a lot of code to make them work.
+- In contrast, Metalama aspects are much easier to build.
 
 1. Step 1. Basic implementation.
 2. Step 2. Inheritance.
 3. Step 3. Member-level attributes.
-4. Step 4. Customization and optimizatons.
+4. Step 4. Customization and optimizations.

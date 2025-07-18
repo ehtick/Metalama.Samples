@@ -5,42 +5,62 @@ using Metalama.Framework.Code.Invokers;
 
 namespace Metalama.Samples.Comparison1;
 
-public class GenerateEqualityComparisonAttribute : TypeAspect
+// [<snippet ImplementEquatableAttribute>]
+public class ImplementEquatableAttribute : TypeAspect
 {
     public override void BuildAspect( IAspectBuilder<INamedType> builder )
     {
         base.BuildAspect( builder );
 
-        // Identify the field and automatic properties that will be part of the comparison.
+// [<endsnippet ImplementEquatableAttribute>]
+
         var targetType = builder.Target;
 
+        // [<snippet IdentifyFields>]
+        // Identify the field and automatic properties that will be part of the comparison.
         var fields = targetType.FieldsAndProperties.Where( f =>
                                                                f.IsAutoPropertyOrField == true && f is
                                                                    { IsStatic: false, IsImplicitlyDeclared: false } )
             .OrderBy( f => f.Name )
             .ToList();
 
+        // [<endsnippet IdentifyFields>]
+
+        // [<snippet ImplementInterface>]
         // Add the IEquatable interface to the type (members will be added lower).
         builder.ImplementInterface(
             ((INamedType) TypeFactory.GetType( typeof(IEquatable<>) )).WithTypeArguments( targetType ) );
 
-        // Introduce the Equals methods.
-        builder.IntroduceMethod( nameof(this.IntroducedTypedEquals), args: new { T = targetType, fields } );
+        // [<endsnippet ImplementInterface>]
 
+        // [<snippet IntroduceTypedEquals>]
+        // Introduce the Equals(T) methods.
+        builder.IntroduceMethod( nameof(this.TypedEqualsTemplate), args: new { T = targetType, fields } );
+
+        // [<endsnippet IntroduceTypedEquals>]
+
+        // [<snippet IntroduceUntypedEquals>]
+        // Introduce the Equals(object) methods.
         builder.IntroduceMethod(
-            nameof(this.IntroducedUntypedEquals),
+            nameof(this.UntypedEqualsTemplate),
             whenExists: OverrideStrategy.Override,
             args: new { T = targetType, fields } );
 
+        // [<endsnippet IntroduceUntypedEquals>]
+
+        // [<snippet IntroduceGetHashcode>]
         // Introduce the GetHashCode method.
         builder.IntroduceMethod(
-            nameof(this.IntroducedGetHashCode),
+            nameof(this.GetHashCodeTemplate),
             whenExists: OverrideStrategy.Override,
             args: new { T = targetType, fields } );
 
+        // [<endsnippet IntroduceGetHashcode>]
+
+        // [<snippet IntroduceOperators>]
         // Introduce the operators.
         builder.IntroduceBinaryOperator(
-            nameof(this.IntroducedEqualityOperator),
+            nameof(this.EqualityOperatorTemplate),
             targetType,
             targetType,
             TypeFactory.GetType( typeof(bool) ),
@@ -48,32 +68,36 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
             args: new { T = targetType } );
 
         builder.IntroduceBinaryOperator(
-            nameof(this.IntroducedInequalityOperator),
+            nameof(this.InequalityOperatorTemplate),
             targetType,
             targetType,
             TypeFactory.GetType( typeof(bool) ),
             OperatorKind.Inequality,
             args: new { T = targetType } );
+
+        // [<endsnippet IntroduceOperators>]
     }
 
     // Template for the Equals(T) method.
     [Template( Name = "Equals" )]
-    public bool IntroducedTypedEquals<[CompileTime] T>( T? other, IReadOnlyList<IFieldOrProperty> fields )
+    public bool TypedEqualsTemplate<[CompileTime] T>( T? other, IReadOnlyList<IFieldOrProperty> fields )
     {
-        if ( other == null )
+        // The following `if` is evaluated at compile time, so the block is only
+        // emitted for reference types.
+        if ( meta.Target.Type.IsReferenceType == true )
         {
-            return false;
-        }
+            if ( other == null )
+            {
+                return false;
+            }
 
-        // If we have a reference type, first check for reference equality because this is very fast.
-        if ( meta.Target.Type.TypeKind is TypeKind.Class or TypeKind.RecordClass )
-        {
             if ( ReferenceEquals( meta.This, other ) )
             {
                 return true;
             }
         }
 
+        // Compare all fields.
         foreach ( var field in fields )
         {
             var defaultComparer = ((INamedType) TypeFactory.GetType( typeof(EqualityComparer<>) ))
@@ -91,10 +115,10 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
 
     // Template for the Equals(object) method.
     [Template( Name = "Equals" )]
-    public bool IntroducedUntypedEquals<[CompileTime] T>( object? other )
+    public bool UntypedEqualsTemplate<[CompileTime] T>( object? other )
     {
         // If we have a reference type, first check for reference equality because this is very fast.
-        if ( meta.Target.Type.TypeKind is TypeKind.Class or TypeKind.RecordClass )
+        if ( meta.Target.Type.IsReferenceType == true )
         {
             if ( ReferenceEquals( meta.This, other ) )
             {
@@ -107,7 +131,7 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
 
     // Template for the GetHashCode method.
     [Template( Name = "GetHashCode" )]
-    public int IntroducedGetHashCode( IReadOnlyList<IFieldOrProperty> fields )
+    public int GetHashCodeTemplate( IReadOnlyList<IFieldOrProperty> fields )
     {
         var hashCode = default(HashCode);
 
@@ -123,13 +147,34 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
         return hashCode.ToHashCode();
     }
 
+    // [<snippet OperatorTemplates>]
     // Template for the == operator.
     [Template]
-    public bool IntroducedEqualityOperator<[CompileTime] T>( T a, T b )
-        => (a == null && b == null) || (a != null && a.Equals( b ));
+    public bool EqualityOperatorTemplate<[CompileTime] T>( T a, T b )
+    {
+        if ( meta.Target.Type.IsReferenceType == true )
+        {
+            return (a == null && b == null) || (a != null && a.Equals( b ));
+        }
+        else
+        {
+            return a!.Equals( b );
+        }
+    }
 
     // Template for the != operator.
     [Template]
-    public bool IntroducedInequalityOperator<[CompileTime] T>( T a, T b )
-        => ((a == null) ^ (b == null)) || (a != null && !a.Equals( b ));
+    public bool InequalityOperatorTemplate<[CompileTime] T>( T a, T b )
+    {
+        if ( meta.Target.Type.IsReferenceType == true )
+        {
+            return ((a == null) ^ (b == null)) || (a != null && !a.Equals( b ));
+        }
+        else
+        {
+            return !a!.Equals( b );
+        }
+    }
+
+    // [<endsnippet OperatorTemplates>]
 }

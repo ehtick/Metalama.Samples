@@ -1,6 +1,6 @@
 ﻿namespace Metalama.Samples.Comparison2;
 
-[GenerateEqualityComparison]
+[ImplementEquatablettribute]
 public partial class Entity
 {
     public string Name { get; init; }

@@ -8,7 +8,7 @@ using Metalama.Samples.Comparison3;
     AspectOrder(
         AspectOrderDirection.CompileTime,
         typeof(EqualityMemberAttribute),
-        typeof(GenerateEqualityComparisonAttribute) )]
+        typeof(ImplementEquatableAttribute) )]
 
 namespace Metalama.Samples.Comparison3;
 
@@ -18,7 +18,7 @@ public class EqualityMemberAttribute : FieldOrPropertyAspect
     {
         base.BuildAspect( builder );
 
-        builder.With( builder.Target.DeclaringType ).RequireAspect<GenerateEqualityComparisonAttribute>();
+        builder.With( builder.Target.DeclaringType ).RequireAspect<ImplementEquatableAttribute>();
     }
 
     public override void BuildEligibility( IEligibilityBuilder<IFieldOrProperty> builder )

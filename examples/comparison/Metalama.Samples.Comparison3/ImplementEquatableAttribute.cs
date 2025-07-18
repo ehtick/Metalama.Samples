@@ -3,23 +3,37 @@ using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using Metalama.Framework.Code.Invokers;
 
-namespace Metalama.Samples.Comparison2;
+namespace Metalama.Samples.Comparison3;
 
 [Inheritable]
-public class GenerateEqualityComparisonAttribute : TypeAspect
+public class ImplementEquatableAttribute : TypeAspect
 {
     public override void BuildAspect( IAspectBuilder<INamedType> builder )
     {
         base.BuildAspect( builder );
 
-        // Identify the field and automatic properties that will be part of the comparison.
+        // Identify the field and automatic properties that might be part of the comparison, look for custom attributes.
         var targetType = builder.Target;
 
         var fields = targetType.FieldsAndProperties.Where( f =>
-                                                               f.IsAutoPropertyOrField == true && f is
-                                                                   { IsStatic: false, IsImplicitlyDeclared: false } )
-            .OrderBy( f => f.Name )
+                                                               f.IsAutoPropertyOrField == true
+                                                               && f is { IsStatic: false, IsImplicitlyDeclared: false }
+                                                               && f.Attributes.Any( typeof(EqualityMemberAttribute) ) )
             .ToList();
+
+        // If there are no members, do not implement the aspect.
+        if ( fields.Count == 0 )
+        {
+            // Write an error unless the aspect was applied through inheritance.
+            if ( builder.AspectInstance.Predecessors[0].Kind != AspectPredecessorKind.Inherited )
+            {
+                builder.Diagnostics.Report( DiagnosticDefinitions.NoEqualityMemberError.WithArguments( targetType ) );
+            }
+
+            builder.SkipAspect();
+
+            return;
+        }
 
         // Find the base Equals method.
         var ancestors = new List<INamedType>();
@@ -46,7 +60,7 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
 
         // Introduce the Equals methods.
         builder.IntroduceMethod(
-            nameof(this.IntroducedTypedEquals),
+            nameof(this.TypedEqualsTemplate),
             args: new
             {
                 TBase = baseEqualsMethod.Type ?? TypeFactory.GetType( SpecialType.Object ),
@@ -57,14 +71,14 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
             buildMethod: m => m.IsVirtual = !targetType.IsSealed );
 
         builder.IntroduceMethod(
-            nameof(this.IntroducedUntypedEquals),
+            nameof(this.UntypedEqualsTemplate),
             whenExists: OverrideStrategy.Override,
             args: new { T = targetType, fields } );
 
         if ( baseEqualsMethod.Method != null )
         {
             builder.IntroduceMethod(
-                nameof(this.IntroducedBaseTypeEquals),
+                nameof(this.BaseTypeEqualsTemplate),
                 whenExists: OverrideStrategy.Override,
                 args: new { TBase = baseEqualsMethod.Type, TDerived = targetType } );
         }
@@ -77,13 +91,13 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
             buildMethod: m => m.IsVirtual = !targetType.IsSealed );
 
         builder.IntroduceMethod(
-            nameof(this.IntroducedGetHashCode),
+            nameof(this.GetHashCodeTemplate),
             whenExists: OverrideStrategy.Override,
             args: new { T = targetType, fields } );
 
         // Introduce the operators.
         builder.IntroduceBinaryOperator(
-            nameof(this.IntroducedEqualityOperator),
+            nameof(this.EqualityOperatorTemplate),
             targetType,
             targetType,
             TypeFactory.GetType( typeof(bool) ),
@@ -91,7 +105,7 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
             args: new { T = targetType } );
 
         builder.IntroduceBinaryOperator(
-            nameof(this.IntroducedInequalityOperator),
+            nameof(this.InequalityOperatorTemplate),
             targetType,
             targetType,
             TypeFactory.GetType( typeof(bool) ),
@@ -101,20 +115,21 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
 
     // Template for the top-level Equals(T) method.
     [Template( Name = "Equals" )]
-    public bool IntroducedTypedEquals<[CompileTime] TBase, [CompileTime] TDerived>(
+    public bool TypedEqualsTemplate<[CompileTime] TBase, [CompileTime] TDerived>(
         TDerived? other,
         IReadOnlyList<IFieldOrProperty> fields,
         IMethod? baseEqualsMethod )
         where TDerived : TBase
     {
-        if ( other == null )
+        // The following `if` is evaluated at compile time, so the block is only
+        // emitted for reference types.
+        if ( meta.Target.Type.IsReferenceType == true )
         {
-            return false;
-        }
+            if ( other == null )
+            {
+                return false;
+            }
 
-        // If we have a reference type, first check for reference equality because this is very fast.
-        if ( meta.Target.Type.TypeKind is TypeKind.Class or TypeKind.RecordClass )
-        {
             if ( ReferenceEquals( meta.This, other ) )
             {
                 return true;
@@ -122,7 +137,7 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
         }
 
         // Call the base strongly-typed Equals method, which typically has a parameter of the base type, but
-        // is overridden in the current type by the IntroducedBaseTypeEquals template.
+        // is overridden in the current type by the BaseTypeEqualsTemplate template.
         if ( baseEqualsMethod != null )
         {
             if ( !baseEqualsMethod.With( InvokerOptions.Base ).Invoke( other ) )
@@ -148,10 +163,10 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
 
     // Templates for the new method hiding the base typed Equals method.
     [Template( Name = "Equals" )]
-    public bool IntroducedBaseTypeEquals<[CompileTime] TBase, [CompileTime] TDerived>( TBase? other )
+    public bool BaseTypeEqualsTemplate<[CompileTime] TBase, [CompileTime] TDerived>( TBase? other )
     {
         // If we have a reference type, first check for reference equality because this is very fast.
-        if ( meta.Target.Type.TypeKind is TypeKind.Class or TypeKind.RecordClass )
+        if ( meta.Target.Type.IsReferenceType == true )
         {
             if ( ReferenceEquals( meta.This, other ) )
             {
@@ -164,10 +179,10 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
 
     // Template for the Equals(object) method.
     [Template( Name = "Equals" )]
-    public bool IntroducedUntypedEquals<[CompileTime] T>( object? other )
+    public bool UntypedEqualsTemplate<[CompileTime] T>( object? other )
     {
         // If we have a reference type, first check for reference equality because this is very fast.
-        if ( meta.Target.Type.TypeKind is TypeKind.Class or TypeKind.RecordClass )
+        if ( meta.Target.Type.IsReferenceType == true )
         {
             if ( ReferenceEquals( meta.This, other ) )
             {
@@ -200,7 +215,7 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
 
     // Template for the GetHashCode method.
     [Template( Name = "GetHashCode" )]
-    public int IntroducedGetHashCode( IReadOnlyList<IFieldOrProperty> fields )
+    public int GetHashCodeTemplate( IReadOnlyList<IFieldOrProperty> fields )
     {
         var hashCode = default(HashCode);
 
@@ -209,13 +224,32 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
         return hashCode.ToHashCode();
     }
 
+   
     // Template for the == operator.
     [Template]
-    public bool IntroducedEqualityOperator<[CompileTime] T>( T a, T b )
-        => (a == null && b == null) || (a != null && a.Equals( b ));
+    public bool EqualityOperatorTemplate<[CompileTime] T>( T a, T b )
+    {
+        if ( meta.Target.Type.IsReferenceType == true )
+        {
+            return (a == null && b == null) || (a != null && a.Equals( b ));
+        }
+        else
+        {
+            return a!.Equals( b );
+        }
+    }
 
     // Template for the != operator.
     [Template]
-    public bool IntroducedInequalityOperator<[CompileTime] T>( T a, T b )
-        => ((a == null) ^ (b == null)) || (a != null && !a.Equals( b ));
+    public bool InequalityOperatorTemplate<[CompileTime] T>( T a, T b )
+    {
+        if ( meta.Target.Type.IsReferenceType == true )
+        {
+            return ((a == null) ^ (b == null)) || (a != null && !a.Equals( b ));
+        }
+        else
+        {
+            return !a!.Equals( b );
+        }
+    }
 }

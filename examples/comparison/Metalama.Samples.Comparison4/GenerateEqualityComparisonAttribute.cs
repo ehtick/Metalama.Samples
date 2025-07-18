@@ -3,7 +3,7 @@ using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using Metalama.Framework.Code.Invokers;
 
-namespace Metalama.Samples.Comparison2;
+namespace Metalama.Samples.Comparison4;
 
 [Inheritable]
 public class GenerateEqualityComparisonAttribute : TypeAspect
@@ -12,14 +12,34 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
     {
         base.BuildAspect( builder );
 
-        // Identify the field and automatic properties that will be part of the comparison.
+        // Identify the field and automatic properties that might be part of the comparison, look for custom attributes.
         var targetType = builder.Target;
 
         var fields = targetType.FieldsAndProperties.Where( f =>
-                                                               f.IsAutoPropertyOrField == true && f is
-                                                                   { IsStatic: false, IsImplicitlyDeclared: false } )
-            .OrderBy( f => f.Name )
+                                                               f.IsAutoPropertyOrField == true
+                                                               && f is { IsStatic: false, IsImplicitlyDeclared: false }
+                                                               && f.Attributes.Any( typeof(EqualityMemberAttribute) ) )
+            .Select( f => new EqualityMember( f, f.Enhancements().GetAspects<EqualityMemberAttribute>().Single() ) )
+            .Select( m => (EqualityMember: m, Cost: m.Aspect.GetCost( m.Field )) )
+            .OrderBy( m => m.EqualityMember.Aspect.Order )
+            .ThenBy( m => m.Cost )
+            .ThenBy( m => m.EqualityMember.Field.Name )
+            .Select( m => m.EqualityMember )
             .ToList();
+
+        // If there are no members, do not implement the aspect.
+        if ( fields.Count == 0 )
+        {
+            // Write an error unless the aspect was applied through inheritance.
+            if ( builder.AspectInstance.Predecessors[0].Kind != AspectPredecessorKind.Inherited )
+            {
+                builder.Diagnostics.Report( DiagnosticDefinitions.NoEqualityMemberError.WithArguments( targetType ) );
+            }
+
+            builder.SkipAspect();
+
+            return;
+        }
 
         // Find the base Equals method.
         var ancestors = new List<INamedType>();
@@ -103,7 +123,7 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
     [Template( Name = "Equals" )]
     public bool IntroducedTypedEquals<[CompileTime] TBase, [CompileTime] TDerived>(
         TDerived? other,
-        IReadOnlyList<IFieldOrProperty> fields,
+        IReadOnlyList<EqualityMember> fields,
         IMethod? baseEqualsMethod )
         where TDerived : TBase
     {
@@ -133,11 +153,9 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
 
         foreach ( var field in fields )
         {
-            var defaultComparer = ((INamedType) TypeFactory.GetType( typeof(EqualityComparer<>) ))
-                .WithTypeArguments( field.Type )
-                .Properties["Default"];
+            var equalityComparer = field.Aspect.GetComparerExpression( field.Field );
 
-            if ( !defaultComparer.Value!.Equals( field.Value, field.With( other ).Value ) )
+            if ( !equalityComparer.Value!.Equals( field.Field.Value, field.Field.With( other ).Value ) )
             {
                 return false;
             }
@@ -180,7 +198,7 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
 
     // Template for AddToHashCode.
     [Template]
-    protected void AddToHashCode( ref HashCode hashCode, IReadOnlyList<IFieldOrProperty> fields )
+    protected void AddToHashCode( ref HashCode hashCode, IReadOnlyList<EqualityMember> fields )
     {
         // Call the base method, or ignore if there is none.
         if ( meta.Target.Method.OverriddenMethod != null )
@@ -190,17 +208,15 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
 
         foreach ( var field in fields )
         {
-            var defaultComparer = ((INamedType) TypeFactory.GetType( typeof(EqualityComparer<>) ))
-                .WithTypeArguments( field.Type )
-                .Properties["Default"];
+            var equalityComparer = field.Aspect.GetComparerExpression( field.Field );
 
-            hashCode.Add( field.Value, defaultComparer.Value );
+            hashCode.Add( field.Field.Value, equalityComparer.Value );
         }
     }
 
     // Template for the GetHashCode method.
     [Template( Name = "GetHashCode" )]
-    public int IntroducedGetHashCode( IReadOnlyList<IFieldOrProperty> fields )
+    public int IntroducedGetHashCode( IReadOnlyList<EqualityMember> fields )
     {
         var hashCode = default(HashCode);
 

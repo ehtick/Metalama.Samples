@@ -3,7 +3,7 @@ using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using Metalama.Framework.Code.Invokers;
 
-namespace Metalama.Samples.Comparison2;
+namespace Metalama.Samples.Comparison3;
 
 [Inheritable]
 public class GenerateEqualityComparisonAttribute : TypeAspect
@@ -12,14 +12,28 @@ public class GenerateEqualityComparisonAttribute : TypeAspect
     {
         base.BuildAspect( builder );
 
-        // Identify the field and automatic properties that will be part of the comparison.
+        // Identify the field and automatic properties that might be part of the comparison, look for custom attributes.
         var targetType = builder.Target;
 
         var fields = targetType.FieldsAndProperties.Where( f =>
-                                                               f.IsAutoPropertyOrField == true && f is
-                                                                   { IsStatic: false, IsImplicitlyDeclared: false } )
-            .OrderBy( f => f.Name )
+                                                               f.IsAutoPropertyOrField == true
+                                                               && f is { IsStatic: false, IsImplicitlyDeclared: false }
+                                                               && f.Attributes.Any( typeof(EqualityMemberAttribute) ) )
             .ToList();
+
+        // If there are no members, do not implement the aspect.
+        if ( fields.Count == 0 )
+        {
+            // Write an error unless the aspect was applied through inheritance.
+            if ( builder.AspectInstance.Predecessors[0].Kind != AspectPredecessorKind.Inherited )
+            {
+                builder.Diagnostics.Report( DiagnosticDefinitions.NoEqualityMemberError.WithArguments( targetType ) );
+            }
+
+            builder.SkipAspect();
+
+            return;
+        }
 
         // Find the base Equals method.
         var ancestors = new List<INamedType>();

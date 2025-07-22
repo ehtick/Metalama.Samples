@@ -57,4 +57,5 @@ In contrast, Metalama aspects are much easier to build. Metalama itself uses Ros
 - code templates,
 - aspect inheritance,
 - code validation (Roslyn generators cannot report errors, you need an additional analyzer),
-- etc.
+- much simpler extensibility,
+- and more.

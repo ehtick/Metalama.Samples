@@ -2,11 +2,15 @@
 using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using Metalama.Framework.Code.Invokers;
+using System.Diagnostics;
 
 namespace Metalama.Samples.Comparison2;
 
+// [<snippet Header>]
 [Inheritable]
-public class ImplementEquatablettribute : TypeAspect
+public class ImplementEquatableAttribute : TypeAspect
+
+// [<endsnippet Header>]
 {
     public override void BuildAspect( IAspectBuilder<INamedType> builder )
     {
@@ -21,65 +25,86 @@ public class ImplementEquatablettribute : TypeAspect
             .OrderBy( f => f.Name )
             .ToList();
 
+        // [<snippet FindBaseEquals>]
         // Find the base Equals method.
-        var ancestors = new List<INamedType>();
+        IMethod? baseEqualsMethod = null;
 
         for ( var parent = builder.Target.BaseType;
               parent != null && parent.SpecialType != SpecialType.Object;
               parent = parent.BaseType )
         {
-            ancestors.Add( parent );
+            baseEqualsMethod = parent.Methods
+                .OfName( "Equals" )
+                .SingleOrDefault( m => m.Parameters.Count == 1
+                                       && m.Parameters[0].Type.Equals( m.DeclaringType )
+                                       && m.IsAccessibleFrom( targetType ) );
+
+            if ( baseEqualsMethod != null )
+            {
+                if ( !CheckMethodOverridable( baseEqualsMethod, targetType, builder ) )
+                {
+                    return;
+                }
+
+                break;
+            }
         }
 
-        var baseEqualsMethod = targetType.AllMethods
-            .OfName( "Equals" )
-            .Where( m => m.Parameters.Count == 1 && m.Parameters[0].Type is INamedType )
-            .Select( m => (Method: m, m.Parameters[0].Type,
-                           Level: ancestors.IndexOf( (INamedType) m.Parameters[0].Type )) )
-            .Where( m => m.Level >= 0 )
-            .OrderBy( m => m.Level )
-            .FirstOrDefault();
+        // [<endsnippet FindBaseEquals>]
+
+        // [<snippet FindBaseGetHashCode>]
+        // Find the base GetHashCode method.
+        var baseGetHashCodeMethod =
+            targetType.BaseType?.AllMethods.OfName( nameof(object.GetHashCode) ).SingleOrDefault();
+
+        if ( baseGetHashCodeMethod?.DeclaringType.Equals( SpecialType.Object ) == true )
+        {
+            // Do not call the GetHashCode method defined on System.Object because it returns
+            // a hash of the reference, which is irrelevant to us.
+            baseGetHashCodeMethod = null;
+        }
+
+        if ( !CheckMethodOverridable( baseGetHashCodeMethod, targetType, builder ) )
+        {
+            return;
+        }
+
+        // [<endsnippet FindBaseGetHashCode>]
 
         // Add the IEquatable interface to the type (interface members will be added lower).
         builder.ImplementInterface(
             ((INamedType) TypeFactory.GetType( typeof(IEquatable<>) )).WithTypeArguments( targetType ) );
 
+        // [<snippet IntroduceTypedEquals>]
         // Introduce the Equals methods.
         builder.IntroduceMethod(
             nameof(this.TypedEqualsTemplate),
-            args: new
-            {
-                TBase = baseEqualsMethod.Type ?? TypeFactory.GetType( SpecialType.Object ),
-                TDerived = targetType,
-                fields,
-                baseEqualsMethod = baseEqualsMethod.Method
-            },
+            args: new { T = targetType, fields, baseEqualsMethod },
             buildMethod: m => m.IsVirtual = !targetType.IsSealed );
+
+        // [<endsnippet IntroduceTypedEquals>]
 
         builder.IntroduceMethod(
             nameof(this.UntypedEqualsTemplate),
             whenExists: OverrideStrategy.Override,
             args: new { T = targetType, fields } );
 
-        if ( baseEqualsMethod.Method != null )
+        // [<snippet IntroduceBaseTypeEquals>]
+        if ( baseEqualsMethod != null )
         {
             builder.IntroduceMethod(
                 nameof(this.BaseTypeEqualsTemplate),
                 whenExists: OverrideStrategy.Override,
-                args: new { TBase = baseEqualsMethod.Type, TDerived = targetType } );
+                args: new { TBase = baseEqualsMethod.DeclaringType, T = targetType } );
         }
+
+        // [<endsnippet IntroduceBaseTypeEquals>]
 
         // Introduce the GetHashCode method.
         builder.IntroduceMethod(
-            nameof(this.AddToHashCode),
-            whenExists: OverrideStrategy.Override,
-            args: new { T = targetType, fields },
-            buildMethod: m => m.IsVirtual = !targetType.IsSealed );
-
-        builder.IntroduceMethod(
             nameof(this.GetHashCodeTemplate),
             whenExists: OverrideStrategy.Override,
-            args: new { T = targetType, fields } );
+            args: new { T = targetType, fields, baseGetHashCodeMethod } );
 
         // Introduce the operators.
         builder.IntroduceBinaryOperator(
@@ -99,39 +124,60 @@ public class ImplementEquatablettribute : TypeAspect
             args: new { T = targetType } );
     }
 
+    private static bool CheckMethodOverridable(
+        IMethod? method,
+        INamedType targetType,
+        IAspectBuilder<INamedType> builder )
+    {
+        if ( method != null && !method.IsOverridable() )
+        {
+            builder.Diagnostics.Report(
+                DiagnosticDefinitions.BaseMethodMustBeVirtual.WithArguments( (method, targetType) ) );
+
+            return false;
+        }
+
+        return true;
+    }
+
     // Template for the top-level Equals(T) method.
     [Template( Name = "Equals" )]
-    public bool TypedEqualsTemplate<[CompileTime] TBase, [CompileTime] TDerived>(
-        TDerived? other,
+    public bool TypedEqualsTemplate<[CompileTime] T>(
+        T? other,
         IReadOnlyList<IFieldOrProperty> fields,
         IMethod? baseEqualsMethod )
-        where TDerived : TBase
     {
         // The following `if` is evaluated at compile time, so the block is only
         // emitted for reference types.
         if ( meta.Target.Type.IsReferenceType == true )
         {
-            if ( other == null )
+            // [<snippet TypedEqualsTemplate_CallBaseMethod>]
+            // Call the base strongly-typed Equals method, which typically has a parameter of the base type, but
+            // is overridden in the current type by the BaseTypeEqualsTemplate template.
+            if ( baseEqualsMethod != null )
             {
-                return false;
+                if ( !baseEqualsMethod.With( InvokerOptions.Base ).Invoke( other ) )
+                {
+                    return false;
+                }
             }
 
-            if ( ReferenceEquals( meta.This, other ) )
+            // [<endsnippet TypedEqualsTemplate_CallBaseMethod>]
+            else
             {
-                return true;
+                if ( other == null )
+                {
+                    return false;
+                }
+
+                if ( ReferenceEquals( meta.This, other ) )
+                {
+                    return true;
+                }
             }
         }
 
-        // Call the base strongly-typed Equals method, which typically has a parameter of the base type, but
-        // is overridden in the current type by the BaseTypeEqualsTemplate template.
-        if ( baseEqualsMethod != null )
-        {
-            if ( !baseEqualsMethod.With( InvokerOptions.Base ).Invoke( other ) )
-            {
-                return false;
-            }
-        }
-
+        // Compare fields of the current type one by one.
         foreach ( var field in fields )
         {
             var defaultComparer = ((INamedType) TypeFactory.GetType( typeof(EqualityComparer<>) ))
@@ -148,19 +194,16 @@ public class ImplementEquatablettribute : TypeAspect
     }
 
     // Templates for the new method hiding the base typed Equals method.
-    [Template( Name = "Equals" )]
-    public bool BaseTypeEqualsTemplate<[CompileTime] TBase, [CompileTime] TDerived>( TBase? other )
+    [Template( Name = "Equals", IsSealed = true )]
+    public bool BaseTypeEqualsTemplate<[CompileTime] TBase, [CompileTime] T>( TBase? other )
     {
-        // If we have a reference type, first check for reference equality because this is very fast.
-        if ( meta.Target.Type.IsReferenceType == true )
+        // First check for reference equality because this is very fast.
+        if ( ReferenceEquals( meta.This, other ) )
         {
-            if ( ReferenceEquals( meta.This, other ) )
-            {
-                return true;
-            }
+            return true;
         }
 
-        return (other is TDerived typed && meta.This.Equals( typed ));
+        return (other is T typed && meta.This.Equals( typed ));
     }
 
     // Template for the Equals(object) method.
@@ -179,15 +222,19 @@ public class ImplementEquatablettribute : TypeAspect
         return other is T typed && meta.This.Equals( typed );
     }
 
-    // Template for AddToHashCode.
-    [Template]
-    protected void AddToHashCode( ref HashCode hashCode, IReadOnlyList<IFieldOrProperty> fields )
+    // Template for the GetHashCode method.
+    [Template( Name = "GetHashCode" )]
+    public int GetHashCodeTemplate( IReadOnlyList<IFieldOrProperty> fields, IMethod? baseGetHashCodeMethod )
     {
-        // Call the base method, or ignore if there is none.
-        if ( meta.Target.Method.OverriddenMethod != null )
+        var hashCode = default(HashCode);
+
+        // [<snippet CallBaseGetHashCode>]
+        if ( baseGetHashCodeMethod != null )
         {
-            meta.Proceed();
+            hashCode.Add( baseGetHashCodeMethod.With( InvokerOptions.Base ).Invoke() );
         }
+
+        // [<endsnippet CallBaseGetHashCode>]
 
         foreach ( var field in fields )
         {
@@ -197,15 +244,6 @@ public class ImplementEquatablettribute : TypeAspect
 
             hashCode.Add( field.Value, defaultComparer.Value );
         }
-    }
-
-    // Template for the GetHashCode method.
-    [Template( Name = "GetHashCode" )]
-    public int GetHashCodeTemplate( IReadOnlyList<IFieldOrProperty> fields )
-    {
-        var hashCode = default(HashCode);
-
-        meta.This.AddToHashCode( ref hashCode );
 
         return hashCode.ToHashCode();
     }

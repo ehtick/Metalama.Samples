@@ -3,7 +3,7 @@ using Metalama.Framework.Eligibility;
 
 namespace Metalama.Samples.Comparison4;
 
-public class StringEqualityMemberAttribute : EqualityMemberAttribute
+public partial class StringEqualityMemberAttribute : EqualityMemberAttribute
 {
     private readonly StringComparison _stringComparison;
     private readonly bool _trim;
@@ -31,24 +31,5 @@ public class StringEqualityMemberAttribute : EqualityMemberAttribute
 
         return ((INamedType) TypeFactory.GetType( comparerType ))
             .Properties[this._stringComparison.ToString()];
-    }
-
-    internal override int GetCost( IFieldOrProperty field )
-    {
-        // TODO: Use benchmark to determine relative costs.
-
-        var cost = this._stringComparison switch
-        {
-            StringComparison.Ordinal => 5,
-            StringComparison.OrdinalIgnoreCase => 10,
-            _ => 50
-        };
-
-        if ( this._trim )
-        {
-            cost += 20;
-        }
-
-        return cost;
     }
 }

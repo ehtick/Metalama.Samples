@@ -48,14 +48,14 @@ public class ImplementEquatableAttribute : TypeAspect
 
         // [<endsnippet IntroduceUntypedEquals>]
 
-        // [<snippet IntroduceGetHashcode>]
+        // [<snippet IntroduceGetHashCode>]
         // Introduce the GetHashCode method.
         builder.IntroduceMethod(
             nameof(this.GetHashCodeTemplate),
             whenExists: OverrideStrategy.Override,
             args: new { T = targetType, fields } );
 
-        // [<endsnippet IntroduceGetHashcode>]
+        // [<endsnippet IntroduceGetHashCode>]
 
         // [<snippet IntroduceOperators>]
         // Introduce the operators.

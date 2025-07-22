@@ -2,13 +2,6 @@
 using Metalama.Framework.Aspects;
 using Metalama.Framework.Code;
 using Metalama.Framework.Eligibility;
-using Metalama.Samples.Comparison3;
-
-[assembly:
-    AspectOrder(
-        AspectOrderDirection.CompileTime,
-        typeof(EqualityMemberAttribute),
-        typeof(ImplementEquatableAttribute) )]
 
 namespace Metalama.Samples.Comparison3;
 
@@ -18,6 +11,7 @@ public class EqualityMemberAttribute : FieldOrPropertyAspect
     {
         base.BuildAspect( builder );
 
+        // Automatically (and implicitly) add the ImplementEquatableAttribute aspect to the declaring type.
         builder.With( builder.Target.DeclaringType ).RequireAspect<ImplementEquatableAttribute>();
     }
 
@@ -27,6 +21,5 @@ public class EqualityMemberAttribute : FieldOrPropertyAspect
 
         builder.MustNotBeStatic();
         builder.MustBeExplicitlyDeclared();
-        builder.MustSatisfy( p => p.IsAutoPropertyOrField == true, p => $"{p} must be an automatic property" );
     }
 }

@@ -12,6 +12,7 @@ using Metalama.Samples.Comparison4;
 
 namespace Metalama.Samples.Comparison4;
 
+// [<snippet Ordering>]
 public class EqualityMemberAttribute : FieldOrPropertyAspect
 {
     protected const int DefaultOrder = 1000;
@@ -22,29 +23,6 @@ public class EqualityMemberAttribute : FieldOrPropertyAspect
     }
 
     public int Order { get; }
-
-    public override void BuildAspect( IAspectBuilder<IFieldOrProperty> builder )
-    {
-        base.BuildAspect( builder );
-
-        builder.With( builder.Target.DeclaringType ).RequireAspect<ImplementEquatableAttribute>();
-    }
-
-    public override void BuildEligibility( IEligibilityBuilder<IFieldOrProperty> builder )
-    {
-        base.BuildEligibility( builder );
-
-        builder.MustNotBeStatic();
-        builder.MustBeExplicitlyDeclared();
-        builder.MustSatisfy( p => p.IsAutoPropertyOrField == true, p => $"{p} must be an automatic property" );
-    }
-
-    protected internal virtual IExpression GetComparerExpression( IFieldOrProperty field )
-    {
-        return ((INamedType) TypeFactory.GetType( typeof(EqualityComparer<>) ))
-            .WithTypeArguments( field.Type )
-            .Properties["Default"];
-    }
 
     internal virtual int GetCost( IFieldOrProperty field )
     {
@@ -90,5 +68,29 @@ public class EqualityMemberAttribute : FieldOrPropertyAspect
         bool HasEqualsAspect( INamedType type )
             => !type.DeclaringAssembly.IsExternal
                && type.Enhancements().HasAspect<ImplementEquatableAttribute>();
+    }
+
+    // [<endsnippet Ordering>]
+
+    public override void BuildAspect( IAspectBuilder<IFieldOrProperty> builder )
+    {
+        base.BuildAspect( builder );
+
+        builder.With( builder.Target.DeclaringType ).RequireAspect<ImplementEquatableAttribute>();
+    }
+
+    public override void BuildEligibility( IEligibilityBuilder<IFieldOrProperty> builder )
+    {
+        base.BuildEligibility( builder );
+
+        builder.MustNotBeStatic();
+        builder.MustBeExplicitlyDeclared();
+    }
+
+    protected internal virtual IExpression GetComparerExpression( IFieldOrProperty field )
+    {
+        return ((INamedType) TypeFactory.GetType( typeof(EqualityComparer<>) ))
+            .WithTypeArguments( field.Type )
+            .Properties["Default"];
     }
 }

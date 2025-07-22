@@ -1,5 +1,5 @@
 ---
-uid: sample-comparison
+uid: sample-comparison-1
 ---
 
 # Equality comparison example, step 1: a minimal implementation
@@ -58,7 +58,7 @@ Now, we want to introduce the strongly-typed `Equals(T)` method, where `T` is th
 
 First, we define a _template_ method. Here's its definition:
 
-[!metalama-file ImplementEquatableAttribute.cs marker="IntroducedTypedEquals"]
+[!metalama-file ImplementEquatableAttribute.cs member="ImplementEquatableAttribute.TypedEqualsTemplate"]
 
 Notice the `[Template]` custom attribute on the method. As the name suggests, it instructs Metalama to treat the method as a _template_ that can include both compile-time and run-time code. The compile-time code is executed at compile time, generating the code that will run at run time.
 
@@ -73,7 +73,7 @@ Note that we're relying on the default `EqualityComparer` for each field type. I
 
 This template doesn't automatically add itself to the target type. We must add the following code to the `BuildAspect` method:
 
-[!metalama-file ImplementEquatableAttribute.cs member="TypedEqualsTemplate"]
+[!metalama-file ImplementEquatableAttribute.cs member="ImplementEquatableAttribute.TypedEqualsTemplate"]
 
 We call the `IntroduceMethod` method from our `BuildAspect` method:
 
@@ -94,13 +94,13 @@ As with any member introduction, two steps are involved: implementing the templa
 
 The template should be straightforward:
 
-[!metalama-file ImplementEquatableAttribute.cs member="UntypedEqualsTemplate"]
+[!metalama-file ImplementEquatableAttribute.cs member="ImplementEquatableAttribute.UntypedEqualsTemplate"]
 
 Note that we're using `meta.This`, which compiles into `this`, i.e., the current instance at run time. By contrast, `this` in the template refers to the compile-time aspect instance.
 
 Here's the code snippet in the `BuildAspect` method:
 
-[!metalama-file ImplementEquatableAttribute.cs marker="IntroduceUnypedEquals"]
+[!metalama-file ImplementEquatableAttribute.cs marker="IntroduceUntypedEquals"]
 
 The `whenExists` parameter determines the strategy if the member already exists in the target type or an ancestor type. We use `OverrideStrategy.Override` to specify that we want to override the member in this case.
 
@@ -112,11 +112,11 @@ The rest of the implementation follows the principles we've already explained.
 
 Here's the template:
 
-[!metalama-file ImplementEquatableAttribute.cs member="GetHashCodeTemplate"]
+[!metalama-file ImplementEquatableAttribute.cs member="ImplementEquatableAttribute.GetHashCodeTemplate"]
 
 And here's the snippet to add to `BuildAspect`:
 
-[!metalama-file ImplementEquatableAttribute.cs marker="IntroduceUnypedEquals"]
+[!metalama-file ImplementEquatableAttribute.cs marker="IntroduceGetHashCode"]
 
 ## Step 7. Adding the operators
 
@@ -124,11 +124,11 @@ The finishing touch, and a best practice, is to introduce the `==` and `!=` oper
 
 Let's first define the templates:
 
-[!metalama-file ImplementEquatableAttribute.cs member="OperatorTemplates"]
+[!metalama-file ImplementEquatableAttribute.cs marker="OperatorTemplates"]
 
 We can now advise the type:
 
-[!metalama-file ImplementEquatableAttribute.cs member="IntroduceOperators"]
+[!metalama-file ImplementEquatableAttribute.cs marker="IntroduceOperators"]
 
 ## Summary
 
@@ -139,3 +139,5 @@ In this article, we've shown how to implement all the components required by thi
 We used compile-time template parameters (including type parameters) to pass data from the `BuildAspect` method to the templates. We generated slightly different code for value and reference types using compile-time conditions.
 
 However, we've limited ourselves to very simple cases. In the next article, we'll explore how to handle type inheritance in reference types.
+
+In the next article, we will add support for type inheritance.

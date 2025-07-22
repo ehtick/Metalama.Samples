@@ -120,7 +120,7 @@ items:
     - name: Equatable
       topicUid: sample-comparison
       items:
-        - name: Step 0. When override the default implementaiton
+        - name: Step 0. When override the system implementation
           topicUid: sample-comparison-why
         - name: Step 1. Basic aspect
           topicUid: sample-comparison-1

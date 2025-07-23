@@ -4,12 +4,12 @@ uid: sample-comparison-4
 
 # Equality comparison example, step 2: Customizing equality comparers
 
-In previous articles, we demonstrated how to automatically implement an equality comparison pattern. We covered handling type inheritance and enhancing our API to allow users to select specific members. However, our implementation had strict limitations: we always used the default comparer (`EqualityComparer<T>.Default`) and employed alphabetical ordering of members.
+In previous articles, we demonstrated how to automatically implement an equality comparison pattern. We covered handling type inheritance and enhancing our API to allow users to select specific members. However, our implementation had strict limitations: we always used the default comparer (<xref:System.Collections.Generic.EqualityComparer%601.Default?text=EqualityComparer&lt;T%gt;.Default>) and employed alphabetical ordering of members.
 
 Let's dig deeper the rabbit hole and add two new features to the aspect library:
 
 - The ability to specify or optimize the order in which members are compared.
-- The ability to use different equality comparers, such as `StringComparer.OrdinalIgnoreCase`.
+- The ability to use different equality comparers, such as <xref:System.StringComparer.OrdinalIgnoreCase?text=StringComparer.OrdinalIgnoreCase>.
 
 Our goal is to support code constructs as illustrated below:
 
@@ -38,7 +38,7 @@ As you can see, the `GetOrder` implementation can become arbitrarily complex, an
 
 ## Step 2. Designing equality comparer customization
 
-We want to allow users to specify their own `IEqualityComparer<T>` implementation. We chose a mechanism where the `EqualityMemberAttribute` class can be derived. We will provide, as examples, two implementations: `StringComparerAttribute`, which will allow the choice of `StringComparison` mode, and `DateComparerAttribute`, which will compare the date component of a `DateTime`, ignoring the time component.
+We want to allow users to specify their own <xref:System.Collections.Generic.IEqualityComparer%601> implementation. We chose a mechanism where the `EqualityMemberAttribute` class can be derived. We will provide, as examples, two implementations: `StringComparerAttribute`, which will allow the choice of <xref:System.StringComparison> mode, and `DateComparerAttribute`, which will compare the date component of a <xref:System.DateTime>, ignoring the time component.
 
 For the `ImplementEquatable` aspect, the equality comparer for every member is just an `IExpression`. Therefore, we will define a `GetComparerExpression` virtual method on `EqualityMemberAttribute`:
 
@@ -50,15 +50,15 @@ Let's look at the implementation of `[StringEqualityMember]`:
 
 As you can see from the code:
 
-- The main code is the `GetComparerExpression` override, which returns an expression representing the comparer (for instance, `StringComparer.Ordinal`).
+- The main code is the `GetComparerExpression` override, which returns an expression representing the comparer (for instance, <xref:System.StringComparer.Ordinal>).
 - `BuildEligibility` restricts this aspect to fields and properties of type `string`.
 - If you want a custom, non-system comparer, you can provide your own as a public class with a public static property. Look at `TrimmingStringEqualityComparer` in the source code for details.
 
 ## Step 3. Updating BuildAspect
 
-Now that we have the elements of our new API in place, we can update the aspect, starting from the information-gathering step in the `BuildAspect` method.
+Now that we have the elements of our new API in place, we can update the aspect, starting from the information-gathering step in the <xref:Metalama.Framework.Aspects.TypeAspect.BuildAspect%2A> method.
 
-In previous articles, all the templates needed to do their job was a list of `IFieldOrProperty`. Now, for each member, we will also need a reference to the aspect instance, so we can call the `GetComparerExpression` method. Therefore, we define the compile-time tuple `EqualityMemberInfo` to represent this data:
+In previous articles, all the templates needed to do their job was a list of <xref:Metalama.Framework.Code.IFieldOrProperty>. Now, for each member, we will also need a reference to the aspect instance, so we can call the `GetComparerExpression` method. Therefore, we define the compile-time tuple `EqualityMemberInfo` to represent this data:
 
 [!metalama-file EqualityMemberInfo.cs]
 
@@ -68,11 +68,11 @@ We can now update the logic that collects the fields. We will obtain the `Equali
 
 ## Step 4. Updating the templates
 
-The templates for `Equals(T)` and `GetHashCode()` must be updated to take the comparer instance from the `GetComparerExpression` method.
+The templates for `Equals(T)` and <xref:System.Object.GetHashCode> must be updated to take the comparer instance from the `GetComparerExpression` method.
 
-First, we update the signatures to accept a list of `EqualityMemberInfo` instead of just `IFieldOrProperty`.
+First, we update the signatures to accept a list of `EqualityMemberInfo` instead of just <xref:Metalama.Framework.Code.IFieldOrProperty>.
 
-Then, we can call the `GetComparerExpression` method to get the `IEqualityComparer<T>`. Here is how we do it in `Equals(T)`:
+Then, we can call the `GetComparerExpression` method to get the <xref:System.Collections.Generic.IEqualityComparer%601>. Here is how we do it in `Equals(T)`:
 
 [!metalama-file ImplementEquatableAttribute.cs marker="CompareFields"]
 
@@ -80,7 +80,7 @@ There should be no surprises in this code!
 
 ## Conclusion
 
-This article has opened the door to a whole new level of meta-programming, where you can define extensibility APIs for your aspects. We showed how to design aspect libraries by providing compile-time extension points, such as the `IEqualityComparer<T>`. Incidentally, this is something that's very difficult to achieve with pure Roslyn source generators. So, in this article, we've found another reason to use Metalama.
+This article has opened the door to a whole new level of meta-programming, where you can define extensibility APIs for your aspects. We showed how to design aspect libraries by providing compile-time extension points, such as the <xref:System.Collections.Generic.IEqualityComparer%601>. Incidentally, this is something that's very difficult to achieve with pure Roslyn source generators. So, in this article, we've found another reason to use Metalama.
 
 As you can imagine, there is much more you can do to customize the equality comparison aspect. We've just scratched the surface.
 

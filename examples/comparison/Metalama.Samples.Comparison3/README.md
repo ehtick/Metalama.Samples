@@ -2,7 +2,7 @@
 uid: sample-comparison-3
 ---
 
-# Equality comparison example, step 2: Hand-picking equality members
+# Equality comparison example, step 3: Hand-picking equality members
 
 In the [first article](xref:sample-comparison-1) of this series, we created an aspect that automatically implements equality comparison for types, including all type fields and automatic properties in the comparison.
 

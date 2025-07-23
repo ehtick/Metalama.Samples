@@ -128,7 +128,7 @@ items:
           topicUid: sample-comparison-2
         - name: Step 3. Hand-picking equality members
           topicUid: sample-comparison-3
-        - name: Step 3. Customizing and optimizing
+        - name: Step 4. Customizing and optimizing
           topicUid: sample-comparison-4
 
     - name: Shared Fabrics

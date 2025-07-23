@@ -117,7 +117,20 @@ items:
           topicUid: sample-builder-2
         - name: Step 3. Handling immutable collections
           topicUid: sample-builder-3
-    
+    - name: Equatable
+      topicUid: sample-comparison
+      items:
+        - name: Step 0. When override the system implementation
+          topicUid: sample-comparison-why
+        - name: Step 1. Basic aspect
+          topicUid: sample-comparison-1
+        - name: Step 2. Supporting type inheritance
+          topicUid: sample-comparison-2
+        - name: Step 3. Hand-picking equality members
+          topicUid: sample-comparison-3
+        - name: Step 4. Customizing and optimizing
+          topicUid: sample-comparison-4
+
     - name: Shared Fabrics
       topicUid: sample-shared-fabric
     - name: Contributing

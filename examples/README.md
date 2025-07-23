@@ -24,6 +24,7 @@ This chapter shows a few examples that demonstrate how to use Metalama. Each of 
 | [Shared Fabric](fabrics/shared/README.md)                 | Demonstrates a fabric that targets several projects. Contributed by Whit Waldo. |
 | [ToString](tostring/README.md)                            | Implements the <xref:System.Object.ToString*> method.                                                           |
 | [Builder](builder/README.md)                              | Implements the Builder pattern, i.e. a mutable `Builder` type nested inside an immutable type. |
+| [Equatable](comparison/README.md)                            | Implements the complete equality comparison pattern, including the `IEquatable<T>` method, and more. |
 
 If you have developed an original aspect with Metalama, consider [contributing](contributing.md) to this list.
 

@@ -2,12 +2,11 @@
 uid: sample-comparison-why
 ---
 
-# Why implementing an equality comparison aspect?
+# Why implement an equality comparison aspect?
 
-Before we start, let's see why and when it is benefitial to use an equality comparison aspect, as opposed to using the default .NET or C# implementation.
+Before we start, let's examine why and when it is beneficial to use an equality comparison aspect, as opposed to using the default .NET or C# implementation.
 
 ## Default implementation
-
 
 In .NET, the default approach to equality comparison varies depending on the type: `class`, `struct`, and `record` each have their own strategy.
 
@@ -18,7 +17,6 @@ In .NET, the default approach to equality comparison varies depending on the typ
 - **`record`**: All fields and automatic properties, whether of `class` or `struct` types, are compared using <xref:System.Collections.Generic.EqualityComparer%601.Default>, where `T` is the field type. This means `record` types perform a deep comparison by default. The strongly-typed <xref:System.Object.Equals%2A> and custom <xref:System.Object.GetHashCode> methods are used in both cases.
 
 ## Advantages of a custom implementation
-
 
 ### For `struct` types
 
@@ -46,7 +44,6 @@ There are two problems with this approach:
 2. The implementation must stay synchronized with the list of fields and automatic properties of the class. If you add a field to a struct, it's easy to forget to update both the <xref:System.Object.Equals%2A> and <xref:System.Object.GetHashCode> methods. This is an unnecessary source of human errors.
 
 To avoid repetitive work and reduce maintenance errors, it's much better to implement the equality contract automatically during compilation.
-
 
 ## Why not Roslyn source generators?
 

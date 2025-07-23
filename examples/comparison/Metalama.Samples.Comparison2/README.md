@@ -29,7 +29,7 @@ To learn more, see <xref:aspect-inheritance>.
 
 ## Step 2. Identifying the base methods
 
-Remember that we decided, in the [previous article](xref:sample-comparison-1), to split the <xref:Metalama.Framework.Aspects.TypeAspect.BuildAspect%2A> method in two parts: first information gathering, then adding advise. We need to enhance the first part and identify artifacts from the base classes.
+Remember that we decided, in the [previous article](xref:sample-comparison-1), to split the <xref:Metalama.Framework.Aspects.TypeAspect.BuildAspect%2A> method in two parts: first information gathering, then adding advice. We need to enhance the first part and identify artifacts from the base classes.
 
 The first thing we need to do is identify the base `Equals(TBase)` method. We iterate through ancestor types and look for a method named `Equals` with a single parameter of the ancestor type. It uses the `IsAccessibleFrom` method to check that the method is accessible from the current type.
 

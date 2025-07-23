@@ -150,5 +150,3 @@ In the <xref:sample-comparison-2>, we will add support for type inheritance.
 > <xref:implementing-interfaces>
 > <xref:introducing-members>
 > <xref:template-parameters>
-> <xref:sample-comparison-2>
-> <xref:sample-comparison-4>

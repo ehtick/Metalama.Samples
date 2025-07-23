@@ -23,9 +23,9 @@ To define valid targets for this attribute, we implement the <xref:Metalama.Fram
 
 [!metalama-file EqualityMemberAttribute.cs]
 
-You can learn more these techniques in <xref:child-aspects> and <xref:eligibility>.
+You can learn more about these techniques in <xref:child-aspects> and <xref:eligibility>.
 
-For the `RequireAspect` method to work, we must ensure that Metalama processes `EqualityMemberAttribute` aspects _before_ `ImplementEquatableAttribute`, otherwise it would be too late for `EqualityMemberAttribute` to add an `ImplementEquatableAttribute` aspect. This is done by using the `[assembly: AspectOrder]` custom attribute:
+For the `RequireAspect` method to work, we must ensure that Metalama processes `EqualityMemberAttribute` aspects _before_ `ImplementEquatableAttribute`; otherwise, it would be too late for `EqualityMemberAttribute` to add an `ImplementEquatableAttribute` aspect. This is done by using the `[assembly: AspectOrder]` custom attribute:
 
 [!metalama-file AspectOrder.cs]
 

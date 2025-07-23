@@ -6,7 +6,7 @@ uid: sample-comparison-4
 
 In previous articles, we demonstrated how to [automatically implement an equality comparison pattern](xref:sample-comparison-1). We covered [handling type inheritance](xref:sample-comparison-2) and enhancing our API to allow users to [select specific equality members](xref:sample-comparison-3). However, our implementation had strict limitations: we always used the default comparer (<xref:System.Collections.Generic.EqualityComparer%601.Default?text=EqualityComparer&lt;T%gt;.Default>) and employed alphabetical ordering of members.
 
-Let's dig deeper the rabbit hole and add two new features to the aspect library:
+Let's dig deeper into the rabbit hole and add two new features to the aspect library:
 
 - The ability to specify or optimize the order in which members are compared.
 - The ability to use different equality comparers, such as <xref:System.StringComparer.OrdinalIgnoreCase?text=StringComparer.OrdinalIgnoreCase>.

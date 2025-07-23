@@ -2,9 +2,9 @@
 uid: sample-comparison-4
 ---
 
-# Equality comparison example, step 2: Customizing equality comparers
+# Equality comparison example, step 4: Customizing equality comparers
 
-In previous articles, we demonstrated how to automatically implement an equality comparison pattern. We covered handling type inheritance and enhancing our API to allow users to select specific members. However, our implementation had strict limitations: we always used the default comparer (<xref:System.Collections.Generic.EqualityComparer%601.Default?text=EqualityComparer&lt;T%gt;.Default>) and employed alphabetical ordering of members.
+In previous articles, we demonstrated how to [automatically implement an equality comparison pattern](xref:sample-comparison-1). We covered [handling type inheritance](xref:sample-comparison-2) and enhancing our API to allow users to [select specific equality members](xref:sample-comparison-3). However, our implementation had strict limitations: we always used the default comparer (<xref:System.Collections.Generic.EqualityComparer%601.Default?text=EqualityComparer&lt;T%gt;.Default>) and employed alphabetical ordering of members.
 
 Let's dig deeper the rabbit hole and add two new features to the aspect library:
 
@@ -30,7 +30,7 @@ However, our aspect won't be able to determine the probability of equality. This
 Therefore, we chose the following design:
 
 - The `EqualityMemberAttribute` class will have an `Order` property, which can be set manually. Its default value will be 1000.
-- When two members have the same order, we order them by _processing cost_, based on hard-coded rules. The cost will be returned by the `GetCost` method of the `EqualityMemberAttribute` class.
+- When two members have the same order, we order them by _execution cost_, based on hard-coded rules that specify, for instance, that it's cheaper to compare two `int` than two `string`. The cost will be returned by the `GetCost` method of the `EqualityMemberAttribute` class.
 
 [!metalama-file EqualityMemberAttribute.cs marker="Ordering"]
 

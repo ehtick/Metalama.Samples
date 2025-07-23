@@ -39,15 +39,15 @@ Note that this snippet calls `CheckMethodOverridable` to verify that the base `E
 
 [!metalama-file ImplementEquatableAttribute.cs member="ImplementEquatableAttribute.CheckMethodOverridable"]
 
-The `CheckMethodOverridable` method calls `builder.Diagnostics.Report` to report an error if the base method cannot be overridden. The error itself must be declared as a static field or property of a compile-time type.
+The `CheckMethodOverridable` method calls `builder.Diagnostics.Report` to report an error if the base method cannot be overridden. The error itself must be declared as a static field or property of a compile-time type. Reporting an error does not stop the execution of `BuildAspect`, so we need an explicit `return` statement. However, any advice provided by `BuildAspect` will be ignored if any error is reported.
 
 [!metalama-file DiagnosticDefinitions.cs]
 
 To learn more about reporting errors and warnings, see <xref:diagnostics>.
 
-To identify the base `Equals` method, the easiest approach is to use the `AllMethods` collections of the base type, which includes all methods of the base type, including all inherited methods.
+To identify the base `Equals` method, the easiest approach is to use the <xref:Metalama.Framework.Code.INamedType.AllMethods> collections of the base type, which includes all methods of the base type, including all inherited methods.
 
-We did not use this approach to find the base `Equals` method because it would have been more difficult. Although it's easy to filter methods whose only parameter is of the same type as the declaring type, this query would potentially return several methods, one for each ancestor, making it more difficult to choose the _closest_ ancestor.
+We did not use this approach to find the base `Equals` method because it would have been more difficult: filtering <xref:Metalama.Framework.Code.INamedType.AllMethods> for methods whose only parameter is of the same type as the declaring type, would potentially return several methods, one for each ancestor, and we would still need to choose the _closest_ ancestor.
 
 [!metalama-file ImplementEquatableAttribute.cs marker="FindBaseGetHashCode"]
 
@@ -88,7 +88,7 @@ The last step is to update the `GetHashCode` method to make it call `baseGetHash
 
 This requires the following changes:
 
-1. In `BuildAction`, pass `baseGetHashCodeMethod` to <xref:Metalama.Framework.Advising.AdviserExtensions.IntroduceMethod%2A>.
+1. In `BuildAspect`, pass `baseGetHashCodeMethod` to <xref:Metalama.Framework.Advising.AdviserExtensions.IntroduceMethod%2A>.
 2. Add an <xref:Metalama.Framework.Code.IMethod>? `baseGetHashCodeMethod` parameter to the template for the <xref:System.Object.GetHashCode> method.
 3. Add the following snippet to the template:
 
@@ -105,7 +105,5 @@ To demonstrate this, let's extract the `Entity` class as a base for the `Person`
 In the [next article](xref:sample-comparison-3), we will make it possible to add individual fields or properties to the equality contract.
 
 > [!div class="see-also"]
-> <xref:aspect-inheritance>
-> <xref:diagnostics>
 > <xref:aspect-inheritance>
 > <xref:diagnostics>

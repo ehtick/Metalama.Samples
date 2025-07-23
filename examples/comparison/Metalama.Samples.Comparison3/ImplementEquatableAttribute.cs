@@ -34,8 +34,6 @@ public class ImplementEquatableAttribute : TypeAspect
                 builder.Diagnostics.Report( DiagnosticDefinitions.NoEqualityMemberError.WithArguments( targetType ) );
             }
 
-            builder.SkipAspect();
-
             return;
         }
 

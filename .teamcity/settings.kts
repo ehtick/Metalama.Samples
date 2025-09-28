@@ -450,6 +450,11 @@ object DownstreamMerge : BuildType({
                      onDependencyFailure = FailureAction.FAIL_TO_START
             }
         }
+        dependency(AbsoluteId("Metalama_Metalama20251_MetalamaPremium_DownstreamMerge")) {
+            snapshot {
+                     onDependencyFailure = FailureAction.ADD_PROBLEM
+            }
+        }
      }
 
 })
